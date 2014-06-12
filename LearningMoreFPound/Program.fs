@@ -76,8 +76,9 @@ let main argv =
             
             printfn  "%s" (stopwatch.ElapsedTicks.ToString())
             printBoard newBoard
-            Console.ReadKey(true) |> ignore
-            gameLoop newBoard (iterationsRemaining - 1)            
+            let keyStroke = Console.ReadKey(true).Key.ToString()
+            if not (keyStroke.Equals "Escape") then
+                gameLoop newBoard (iterationsRemaining - 1)            
         else
             printfn ""
 
