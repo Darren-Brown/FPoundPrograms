@@ -13,16 +13,16 @@ open Microsoft.FSharp.Reflection
 [<EntryPoint>]
 let main argv = 
 
-    let rec SumThreesAndFives currentSum currentNumber maxNumber =
-        if currentNumber <= maxNumber then
-            if (currentNumber % 5) = 0 || (currentNumber % 3) = 0 then
-                SumThreesAndFives (currentSum + currentNumber) (currentNumber + 1) maxNumber
-            else
-                SumThreesAndFives currentSum (currentNumber + 1) maxNumber
-        else
-            currentSum
+    let rec SumThirdFib firstNum secondNum curTotal =
+        let evenNum = firstNum + secondNum
+        if (firstNum < 4000000) && (secondNum < 4000000) && (evenNum < 4000000) then
+            let newFirst = secondNum + evenNum
+            let newSecond = evenNum + newFirst
+            SumThirdFib newFirst newSecond (evenNum + curTotal)
+        else 
+            curTotal
 
-    printfn "the sum is %d" (SumThreesAndFives 0 1 1000)
+    printfn "the sum is %d" (SumThirdFib 3 5 2)
     
 
     printf "\nPress any key to continue..."
