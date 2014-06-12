@@ -7,3 +7,6 @@ C:\Users\Darren.Brown\Documents\Visual Studio 2012\Projects\LearningMoreFPound\L
 C:\Users\Darren.Brown\Documents\Visual Studio 2012\Projects\LearningMoreFPound\LearningMoreFPound\obj\Debug\LearningMoreFPound.fsprojResolveAssemblyReference.cache
 C:\Users\Darren.Brown\Documents\Visual Studio 2012\Projects\LearningMoreFPound\LearningMoreFPound\obj\Debug\LearningMoreFPound.exe
 C:\Users\Darren.Brown\Documents\Visual Studio 2012\Projects\LearningMoreFPound\LearningMoreFPound\obj\Debug\LearningMoreFPound.pdb
+C:\Users\Darren.Brown\Documents\Visual Studio 2012\Projects\LearningMoreFPound\LearningMoreFPound\bin\Debug\FSharp.Data.dll
+C:\Users\Darren.Brown\Documents\Visual Studio 2012\Projects\LearningMoreFPound\LearningMoreFPound\bin\Debug\FSharp.Data.pdb
+C:\Users\Darren.Brown\Documents\Visual Studio 2012\Projects\LearningMoreFPound\LearningMoreFPound\bin\Debug\FSharp.Data.xml
