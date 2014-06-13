@@ -21,6 +21,9 @@ let main argv =
 
     printf "Enter dungeon size: "
     let dungeonSize = int32 (Console.ReadLine())
+    
+    let generator = new Random (DateTime.Now.Millisecond)
+    let playerPosition = [|generator.Next(1, dungeonSize); generator.Next(1, dungeonSize);|]
 
     let wallDungeon size (dungeon:char[,]) =
             let adjustedSize = size
@@ -35,13 +38,13 @@ let main argv =
         let allFog = Array2D.create (size + 2) (size + 2) '?'
         wallDungeon (size + 1) allFog
 
-    let buildDungeon size = 
-        let generator = new Random(DateTime.Now.Millisecond)
+    let buildDungeon size (playerPosition:int[]) = 
+        let generator = new Random (DateTime.Now.Millisecond)
         let emptyDungeon = Array2D.create (size + 2) (size + 2) '.'
 
         let walledDungeon = wallDungeon (size + 1) emptyDungeon
 
-        let entrancePosition = [|generator.Next(1, size); generator.Next(1, size);|]
+        let entrancePosition = playerPosition
         walledDungeon.SetValue('^', entrancePosition)
 
         let addElements symbol percent dungeonSize (dungeon:char[,]) =
@@ -75,11 +78,17 @@ let main argv =
 
         walledDungeon
     
-    let dungeon = buildDungeon dungeonSize
+    let dungeon = buildDungeon dungeonSize playerPosition
     let map = buildFoggedMap dungeonSize
+
+    let printPlayerView (playerPosition:int[]) (map:char[,]) =
+        let temp = map.[(playerPosition.[0] - 1)..(playerPosition.[0] + 1), (playerPosition.[1] - 1)..(playerPosition.[1] + 1)]
+        temp.SetValue('@', [|1; 1|])
+        printfn "%A" temp
 
     printfn "%A" dungeon
     printfn "%A" map
+    printPlayerView playerPosition map
 
     printf "\nPress any key to continue..."
     Console.ReadKey(true) |> ignore
