@@ -86,10 +86,30 @@ let main argv =
         temp.SetValue('@', [|1; 1|])
         printfn "%A" temp
 
-    printfn "%A" dungeon
-    printfn "%A" map
-    printPlayerView playerPosition map
+    let updateMap (playerPosition:int[]) (map:char[,]) (dungeon:char[,]) =
+        map.SetValue((dungeon.[playerPosition.[0], playerPosition.[1]]), playerPosition)
 
+    let movePlayer (oldPosition:int[])=
+        let direction = Console.ReadKey(true).KeyChar
+        let newPosition =
+            match direction with
+                |'d' -> [|oldPosition.[0]; oldPosition.[1] + 1;|]
+                |'a' -> [|oldPosition.[0]; oldPosition.[1] - 1;|]
+                |'s' -> [|oldPosition.[0]+ 1; oldPosition.[1];|]
+                |'w' -> [|oldPosition.[0]- 1; oldPosition.[1];|]
+                | _ -> oldPosition
+        newPosition
+
+    let rec gameLoop (playerPos:int[]) (map:char[,]) (dungeon:char[,]) =
+        //printfn "%A" dungeon       
+        //printPlayerView playerPosition map
+        updateMap playerPos map dungeon
+        Console.Clear()
+        printfn "%A" map
+        
+        gameLoop (movePlayer playerPos) map dungeon
+
+    gameLoop playerPosition map dungeon
     printf "\nPress any key to continue..."
     Console.ReadKey(true) |> ignore
     0 // return an integer exit code
