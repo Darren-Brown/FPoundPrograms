@@ -22,11 +22,7 @@ let main argv =
     printf "Enter dungeon size: "
     let dungeonSize = int32 (Console.ReadLine())
 
-    let buildDungeon size = 
-        let generator = new Random(DateTime.Now.Millisecond)
-        let emptyDungeon = Array2D.create (size + 2) (size + 2) '.'
-
-        let wallDungeon size (dungeon:char[,]) =
+    let wallDungeon size (dungeon:char[,]) =
             let adjustedSize = size
             for i = 0 to adjustedSize do
                 dungeon.SetValue( '#', [|0; i;|])
@@ -34,6 +30,14 @@ let main argv =
                 dungeon.SetValue( '#', [|i; 0;|])
                 dungeon.SetValue( '#', [|i; adjustedSize;|])
             dungeon
+
+    let buildFoggedMap size =
+        let allFog = Array2D.create (size + 2) (size + 2) '?'
+        wallDungeon (size + 1) allFog
+
+    let buildDungeon size = 
+        let generator = new Random(DateTime.Now.Millisecond)
+        let emptyDungeon = Array2D.create (size + 2) (size + 2) '.'
 
         let walledDungeon = wallDungeon (size + 1) emptyDungeon
 
@@ -69,12 +73,13 @@ let main argv =
         addElements 'P' pitTrapPercent (size + 1) walledDungeon
         addElements '$' goldPercent (size + 1) walledDungeon
 
-//        let pitTrapNumbers = 
-
-        printfn "%A" walledDungeon
-        printfn "wakka"
+        walledDungeon
     
-    buildDungeon dungeonSize
+    let dungeon = buildDungeon dungeonSize
+    let map = buildFoggedMap dungeonSize
+
+    printfn "%A" dungeon
+    printfn "%A" map
 
     printf "\nPress any key to continue..."
     Console.ReadKey(true) |> ignore
