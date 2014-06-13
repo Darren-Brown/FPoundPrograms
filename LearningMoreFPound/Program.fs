@@ -84,13 +84,16 @@ let main argv =
     let printPlayerView (playerPosition:int[]) (map:char[,]) =
         let temp = map.[(playerPosition.[0] - 1)..(playerPosition.[0] + 1), (playerPosition.[1] - 1)..(playerPosition.[1] + 1)]
         temp.SetValue('@', [|1; 1|])
+        Console.Clear()
         printfn "%A" temp
 
     let updateMap (playerPosition:int[]) (map:char[,]) (dungeon:char[,]) =
         map.SetValue((dungeon.[playerPosition.[0], playerPosition.[1]]), playerPosition)
 
-    let movePlayer (oldPosition:int[])=
-        let direction = Console.ReadKey(true).KeyChar
+
+
+
+    let movePlayer direction (oldPosition:int[]) (dungeon:char[,])=
         let newPosition =
             match direction with
                 |'d' -> [|oldPosition.[0]; oldPosition.[1] + 1;|]
@@ -98,16 +101,43 @@ let main argv =
                 |'s' -> [|oldPosition.[0]+ 1; oldPosition.[1];|]
                 |'w' -> [|oldPosition.[0]- 1; oldPosition.[1];|]
                 | _ -> oldPosition
-        newPosition
+        if (dungeon.[newPosition.[0], newPosition.[1]] = '#') then
+            oldPosition
+        else
+            newPosition
+
+    let updateGameStatus (playerPos:int[]) (dungeon:char[,]) =
+        match (dungeon.[playerPos.[0], playerPos.[1]]) with
+            |'W' -> printfn "Handle find a weapon"
+            |'$' -> printfn "Handle find gold"
+            |'P' -> printfn "Handle find pit"
+            |'!' -> printfn "Handle find wumpus"
+            |'^' -> printfn "Handle at entrance"
+            | _ -> printfn "Handle empty room"
 
     let rec gameLoop (playerPos:int[]) (map:char[,]) (dungeon:char[,]) =
-        //printfn "%A" dungeon       
-        //printPlayerView playerPosition map
-        updateMap playerPos map dungeon
-        Console.Clear()
-        printfn "%A" map
         
-        gameLoop (movePlayer playerPos) map dungeon
+        let updatePlayer (playerPos:int[]) (map:char[,]) (dungeon:char[,]) =
+            let input = Console.ReadKey(true).KeyChar
+            match input with
+                |'d' | 'a' | 's' | 'w' ->   let newPos = movePlayer input playerPos dungeon
+                                            updateMap newPos map dungeon
+                                            updateGameStatus newPos dungeon
+                                            gameLoop newPos map dungeon
+                |'l' -> printfn "Handle looting gold"
+                        gameLoop playerPos map dungeon
+                |'r' -> printfn "Handle exiting dungeon"
+                        gameLoop playerPos map dungeon
+                |'x' -> printfn "Handle quick exit game"
+                |'?' -> printfn "Handle printing commands"
+                        gameLoop playerPos map dungeon
+                | _ ->  printfn "do nothing"
+                            
+        
+        printPlayerView playerPos map
+        updatePlayer playerPos map dungeon
+        
+
 
     gameLoop playerPosition map dungeon
     printf "\nPress any key to continue..."
