@@ -132,6 +132,7 @@ let main argv =
                 |'?' -> printfn "Handle printing commands"
                         gameLoop playerPos map dungeon
                 | _ ->  printfn "do nothing"
+                        gameLoop playerPos map dungeon
                             
         
         printPlayerView playerPos map
