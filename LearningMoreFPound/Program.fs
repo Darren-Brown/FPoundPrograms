@@ -52,7 +52,7 @@ let main argv =
     let printBoardWithPath (board:char[][]) =
         for item in board do
             for subItem in item do
-                if subItem = '@' then
+                if subItem = '@' || subItem = '$' then
                     printf " "
                 else
                     printf "%c" subItem
@@ -74,6 +74,7 @@ let main argv =
             valids
         else 
             if (isValidTerrain maze positions.Head) then
+                maze.[positions.Head.[0]].SetValue('$', positions.Head.[1])
                 checkListForValidTerrain maze positions.Tail (List.Cons(positions.Head, valids))
             else
                 checkListForValidTerrain maze positions.Tail valids
@@ -91,24 +92,44 @@ let main argv =
         | '*' -> true
         | _ -> false
 
-    let rec checkListForPath (maze:char[][]) (positions:List<int[]>)=       
+
+    let rec checkListForPath (maze:char[][]) pathFound (positions:List<int[]>) =
         if positions.IsEmpty then
-            false
+            if pathFound = 1 then
+                true
+            else
+                false
         else
             if (positions.Head.[0] >= 0) && (positions.Head.[1] >= 1) then 
                 if (isPath maze positions.Head) then
-                    true
+                    checkListForPath maze (pathFound + 1) positions.Tail
                 else
-                    checkListForPath maze positions.Tail
+                    checkListForPath maze pathFound positions.Tail
             else
-                checkListForPath maze positions.Tail
+                checkListForPath maze pathFound positions.Tail
 
-    let checkForPath (maze:char[][]) (playerPosition:int[]) =
-        let potentialNeighbours = [    [|(playerPosition.[0] + 1); (playerPosition.[1]);|];
-                                        [|(playerPosition.[0] - 1); (playerPosition.[1]);|];
-                                        [|(playerPosition.[0]); (playerPosition.[1] - 1);|];
-                                        [|(playerPosition.[0]); (playerPosition.[1] + 1);|]; ]
-        checkListForPath maze potentialNeighbours
+//    let rec checkListForPath (maze:char[][]) (positions:List<int[]>)=       
+//        if positions.IsEmpty then
+//            false
+//        else
+//            if (positions.Head.[0] >= 0) && (positions.Head.[1] >= 1) then 
+//                if (isPath maze positions.Head) then
+//                    true
+//                else
+//                    checkListForPath maze positions.Tail
+//            else
+//                checkListForPath maze positions.Tail
+
+//    let checkForPath (maze:char[][]) (playerPosition:int[]) =
+//        let potentialNeighbours = [    [|(playerPosition.[0] + 1); (playerPosition.[1]);|];
+//                                        [|(playerPosition.[0] - 1); (playerPosition.[1]);|];
+//                                        [|(playerPosition.[0]); (playerPosition.[1] - 1);|];
+//                                        [|(playerPosition.[0]); (playerPosition.[1] + 1);|]; ]
+////        checkListForPath maze potentialNeighbours
+//        checkListForPath maze 0 potentialNeighbours
+
+    let checkForPath (maze:char[][]) (neighbours:List<int[]>) =
+        checkListForPath maze 0 neighbours
 
     let isPlayerAtEnd (playerPosition:int[]) (endPosition:int[]) =
         if playerPosition.[0] = endPosition.[0] && playerPosition.[1] = endPosition.[1] then
@@ -158,12 +179,18 @@ let main argv =
                 for item in newToVisits do
                     toVisit.Enqueue(item)
             maze.[curPosition.[0]].SetValue('@', curPosition.[1])
+            Console.Clear()
+            printBoard maze
+            Console.ReadKey (false) |> ignore
             if (toVisit.Count > 0) then
                 let nextPosition = toVisit.Dequeue()
                 let updatedMaze = depthFirstSearch maze nextPosition toVisit
-                if (checkForPath updatedMaze curPosition) then //check if one of neighbours has a * in it                    
-                    updatePosition updatedMaze
-                    
+                if (checkForPath updatedMaze newToVisits) then //check if one of neighbours has a * in it                    
+                    let tmep = updatePosition updatedMaze
+                    Console.Clear()
+                    printBoard tmep
+                    Console.ReadKey (false) |> ignore
+                    tmep
                 else
                     updatedMaze
             else
