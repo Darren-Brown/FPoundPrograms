@@ -60,7 +60,7 @@ let main argv =
 
     let isValidTerrain (maze:char[][]) (position:int[]) =
         if (position.[0] >= 0) && (position.[1] >= 0) then
-            if (position.[0] < (maze.GetLength(0) - 1)) && (position.[1] < (maze.[0].GetLength(0) - 1)) then
+            if (position.[0] < (maze.GetLength(0) - 1)) && (position.[1] < (maze.[position.[0]].GetLength(0) - 1)) then
                 match maze.[position.[0]].[position.[1]] with
                 | ' ' | 'E' -> true
                 | _ -> false
@@ -107,26 +107,6 @@ let main argv =
                     checkListForPath maze pathFound positions.Tail
             else
                 checkListForPath maze pathFound positions.Tail
-
-//    let rec checkListForPath (maze:char[][]) (positions:List<int[]>)=       
-//        if positions.IsEmpty then
-//            false
-//        else
-//            if (positions.Head.[0] >= 0) && (positions.Head.[1] >= 1) then 
-//                if (isPath maze positions.Head) then
-//                    true
-//                else
-//                    checkListForPath maze positions.Tail
-//            else
-//                checkListForPath maze positions.Tail
-
-//    let checkForPath (maze:char[][]) (playerPosition:int[]) =
-//        let potentialNeighbours = [    [|(playerPosition.[0] + 1); (playerPosition.[1]);|];
-//                                        [|(playerPosition.[0] - 1); (playerPosition.[1]);|];
-//                                        [|(playerPosition.[0]); (playerPosition.[1] - 1);|];
-//                                        [|(playerPosition.[0]); (playerPosition.[1] + 1);|]; ]
-////        checkListForPath maze potentialNeighbours
-//        checkListForPath maze 0 potentialNeighbours
 
     let checkForPath (maze:char[][]) (neighbours:List<int[]>) =
         checkListForPath maze 0 neighbours
