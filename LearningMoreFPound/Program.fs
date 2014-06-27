@@ -60,7 +60,7 @@ let main argv =
 
     let isValidTerrain (maze:char[][]) (position:int[]) =
         if (position.[0] >= 0) && (position.[1] >= 0) then
-            if (position.[0] < (maze.GetLength(0) - 1)) && (position.[1] < (maze.[position.[0]].GetLength(0) - 1)) then
+            if (position.[0] <= (maze.GetLength(0) - 1)) && (position.[1] <= (maze.[position.[0]].GetLength(0) - 1)) then
                 match maze.[position.[0]].[position.[1]] with
                 | ' ' | 'E' -> true
                 | _ -> false
@@ -100,7 +100,7 @@ let main argv =
             else
                 false
         else
-            if (positions.Head.[0] >= 0) && (positions.Head.[1] >= 1) then 
+            if (positions.Head.[0] >= 0) && (positions.Head.[1] >= 0) then 
                 if (isPath maze positions.Head) then
                     checkListForPath maze (pathFound + 1) positions.Tail
                 else
