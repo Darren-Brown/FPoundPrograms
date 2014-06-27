@@ -84,13 +84,17 @@ let main argv =
     let printPlayerView (playerPosition:int[]) (map:char[,]) =
         let temp = map.[(playerPosition.[0] - 1)..(playerPosition.[0] + 1), (playerPosition.[1] - 1)..(playerPosition.[1] + 1)]
         temp.SetValue('@', [|1; 1|])
-        Console.Clear()
         printfn "%A" temp
 
     let updateMap (playerPosition:int[]) (map:char[,]) (dungeon:char[,]) =
         map.SetValue((dungeon.[playerPosition.[0], playerPosition.[1]]), playerPosition)
 
-
+    let obliterateWeapons (map:char[,]) (dungeon:char[,])=
+        for i = 0 to dungeonSize do
+            for j = 0 to dungeonSize do
+                if dungeon.[i,j] = 'W' then
+                    dungeon.SetValue('$', [|i; j;|])
+                    updateMap [|i; j;|] map dungeon
 
 
     let movePlayer direction (oldPosition:int[]) (dungeon:char[,])=
@@ -115,24 +119,34 @@ let main argv =
             |'^' -> printfn "Handle at entrance"
             | _ -> printfn "Handle empty room"
 
-    let rec gameLoop (playerPos:int[]) (map:char[,]) (dungeon:char[,]) =
+    let playerLoot (playerPos:int[]) (dungeon:char[,]) =
+        dungeon.SetValue('.', playerPos.[0], playerPos.[1])
+
+    let rec gameLoop (playerPos:int[]) playerScore playerArmed (map:char[,]) (dungeon:char[,]) =
         
         let updatePlayer (playerPos:int[]) (map:char[,]) (dungeon:char[,]) =
             let input = Console.ReadKey(true).KeyChar
+            Console.Clear()
             match input with
                 |'d' | 'a' | 's' | 'w' ->   let newPos = movePlayer input playerPos dungeon
                                             updateMap newPos map dungeon
                                             updateGameStatus newPos dungeon
-                                            gameLoop newPos map dungeon
-                |'l' -> printfn "Handle looting gold"
-                        gameLoop playerPos map dungeon
+                                            gameLoop newPos playerScore playerArmed map dungeon
+                |'l' -> match (dungeon.[playerPos.[0], playerPos.[1]]) with
+                            |'W' -> playerLoot playerPos map
+                                    obliterateWeapons map dungeon
+                                    gameLoop playerPos playerScore true map dungeon
+                            |'$' -> playerLoot playerPos map
+                                    gameLoop playerPos (playerScore + 1) playerArmed map dungeon
+                            |_ -> printfn "You cannot loot that"
+                        gameLoop playerPos playerScore playerArmed map dungeon
                 |'r' -> printfn "Handle exiting dungeon"
-                        gameLoop playerPos map dungeon
+                        gameLoop playerPos playerScore playerArmed map dungeon
                 |'x' -> printfn "Handle quick exit game"
                 |'?' -> printfn "Handle printing commands"
-                        gameLoop playerPos map dungeon
+                        gameLoop playerPos playerScore playerArmed map dungeon
                 | _ ->  printfn "do nothing"
-                        gameLoop playerPos map dungeon
+                        gameLoop playerPos playerScore playerArmed map dungeon
                             
         
         printPlayerView playerPos map
@@ -140,7 +154,7 @@ let main argv =
         
 
 
-    gameLoop playerPosition map dungeon
+    gameLoop playerPosition 0 false map dungeon
     printf "\nPress any key to continue..."
     Console.ReadKey(true) |> ignore
     0 // return an integer exit code
