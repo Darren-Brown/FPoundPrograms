@@ -119,13 +119,24 @@ let main argv =
         //printPlayerView playerPos map
         match input with
             |'d' | 'a' | 's' | 'w' ->   let newPos = movePlayer input playerPos dungeon
+                                        let unexploredRoom = (map.[newPos.[0], newPos.[1]] = '.')
                                         updateMap newPos map dungeon
                                         match (dungeon.[newPos.[0], newPos.[1]]) with
                                         | '!' ->    printfn "Handle meeting a Wumpus (+10 points or death)"
-                                        | 'P' ->    printfn "Handle meeting a Pit (death)"
+                                                    if playerArmed then
+                                                        printfn "You slay the Wumpus"
+                                                        playerLoot playerPos map dungeon
+                                                        gameLoop newPos (playerScore + 10) playerArmed map dungeon
+                                                    else
+                                                        printfn "The Wumpus slays you"
+                                        | 'P' ->    printfn "You fall down a pit. The reaper takes you."
                                         | '.' ->    printfn "Handle entering empty room (+1 point or nothing)"
+                                                    if unexploredRoom then
+                                                        gameLoop newPos (playerScore + 1) playerArmed map dungeon
+                                                    else
+                                                        gameLoop newPos playerScore playerArmed map dungeon
                                         | _ ->      printfn "do nothing"
-                                        gameLoop newPos playerScore playerArmed map dungeon
+                                                    gameLoop newPos playerScore playerArmed map dungeon
             |'l' -> match (dungeon.[playerPos.[0], playerPos.[1]]) with
                         |'W' -> playerLoot playerPos map dungeon
                                 obliterateWeapons map dungeon
