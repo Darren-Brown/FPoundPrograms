@@ -92,7 +92,6 @@ let main argv =
                     if map.[i,j] <> '?' then
                         updateMap [|i; j;|] map dungeon
 
-
     let movePlayer direction (oldPosition:int[]) (dungeon:char[,])=
         let newPosition =
             match direction with
@@ -110,33 +109,49 @@ let main argv =
         dungeon.SetValue('.', playerPos.[0], playerPos.[1])
         updateMap playerPos map dungeon
 
+    let rec checkSurroundingsForChar (toCheck:list<char>) checkValue =
+        if toCheck.IsEmpty then
+            false
+        else 
+            let temp = toCheck.Head
+            if temp = checkValue then
+                true
+            else
+                checkSurroundingsForChar (toCheck.Tail) checkValue
+
+    let rec printEnvironmentMessages (playerPosition:int[]) (dungeon:char[,]) =
+        let NESW = [    dungeon.[playerPosition.[0] + 1, playerPosition.[1]];
+                        dungeon.[playerPosition.[0] - 1, playerPosition.[1]];
+                        dungeon.[playerPosition.[0], playerPosition.[1] + 1];
+                        dungeon.[playerPosition.[0], playerPosition.[1] - 1];]
+
+        if checkSurroundingsForChar NESW '!' then
+            printfn "You detect a foul stench in the air"
+        if checkSurroundingsForChar NESW 'P' then
+            printfn "You hear a howling wind"
+
     let rec gameLoop (playerPos:int[]) playerScore playerArmed (map:char[,]) (dungeon:char[,]) =
-        
-        printfn "%A \n" map
-        printfn "%A" dungeon
+        printPlayerView playerPos map
+        printEnvironmentMessages playerPos dungeon
         let input = Console.ReadKey(true).KeyChar
         Console.Clear()
-        //printPlayerView playerPos map
         match input with
             |'d' | 'a' | 's' | 'w' ->   let newPos = movePlayer input playerPos dungeon
-                                        let unexploredRoom = (map.[newPos.[0], newPos.[1]] = '.')
+                                        let unexploredRoom = (map.[newPos.[0], newPos.[1]] = '?')
                                         updateMap newPos map dungeon
                                         match (dungeon.[newPos.[0], newPos.[1]]) with
-                                        | '!' ->    printfn "Handle meeting a Wumpus (+10 points or death)"
-                                                    if playerArmed then
+                                        | '!' ->    if  playerArmed then
                                                         printfn "You slay the Wumpus"
                                                         playerLoot playerPos map dungeon
                                                         gameLoop newPos (playerScore + 10) playerArmed map dungeon
                                                     else
                                                         printfn "The Wumpus slays you"
                                         | 'P' ->    printfn "You fall down a pit. The reaper takes you."
-                                        | '.' ->    printfn "Handle entering empty room (+1 point or nothing)"
-                                                    if unexploredRoom then
+                                        | '.' ->    if unexploredRoom then
                                                         gameLoop newPos (playerScore + 1) playerArmed map dungeon
                                                     else
                                                         gameLoop newPos playerScore playerArmed map dungeon
-                                        | _ ->      printfn "do nothing"
-                                                    gameLoop newPos playerScore playerArmed map dungeon
+                                        | _ ->      gameLoop newPos playerScore playerArmed map dungeon
             |'l' -> match (dungeon.[playerPos.[0], playerPos.[1]]) with
                         |'W' -> playerLoot playerPos map dungeon
                                 obliterateWeapons map dungeon
@@ -145,17 +160,11 @@ let main argv =
                                 gameLoop playerPos (playerScore + 5) playerArmed map dungeon
                         |_ ->   printfn "You cannot loot that"
                                 gameLoop playerPos playerScore playerArmed map dungeon
-            |'r' -> printfn "Handle exiting dungeon"
-                    printfn "You escaped the Wumpus cave with %d points" playerScore
-            |'x' -> printfn "Handle quick exit game"
+            |'r' -> printfn "You escaped the Wumpus cave with %d points" playerScore
+            |'x' -> printfn "Thanks for playing"
             |'?' -> printfn "Handle printing commands"
                     gameLoop playerPos playerScore playerArmed map dungeon
-            | _ ->  printfn "do nothing"
-                    gameLoop playerPos playerScore playerArmed map dungeon
-                            
-        
-        
-        
+            | _ ->  gameLoop playerPos playerScore playerArmed map dungeon
 
     updateMap playerPosition map dungeon
     gameLoop playerPosition 0 false map dungeon
