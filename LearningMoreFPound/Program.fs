@@ -54,8 +54,6 @@ let main argv =
                     let dimX, dimY = generator.Next(1, dungeonSize), generator.Next(1, dungeonSize)
                     if not (List.exists (fun x -> (dimX, dimY) = x) positions) && (dungeon.[dimX, dimY] = '.') then
                         let newPosition = (dimX, dimY)
-                        if newPosition = (entrancePosition.[0], entrancePosition.[1]) then
-                            printfn "walla"
                         let newList = List.Cons(newPosition, positions)
                         generatePositions (numToGenerate - 1) dungeonSize newList dungeon
                     else
@@ -66,9 +64,6 @@ let main argv =
             let elementPositions = generatePositions elementNumbers dungeonSize List.Empty dungeon
             for item in elementPositions do
                 dungeon.SetValue(symbol, [|fst item; snd item|])
-
-            
-            printfn "wakka"
 
         let wumpusNumbers = Math.Floor(wumpusPercent * float (size * size))
         addElements '!' wumpusPercent (size + 1) walledDungeon
@@ -94,7 +89,8 @@ let main argv =
             for j = 0 to dungeonSize do
                 if dungeon.[i,j] = 'W' then
                     dungeon.SetValue('$', [|i; j;|])
-                    updateMap [|i; j;|] map dungeon
+                    if map.[i,j] <> '?' then
+                        updateMap [|i; j;|] map dungeon
 
 
     let movePlayer direction (oldPosition:int[]) (dungeon:char[,])=
@@ -110,50 +106,46 @@ let main argv =
         else
             newPosition
 
-    let updateGameStatus (playerPos:int[]) (dungeon:char[,]) =
-        match (dungeon.[playerPos.[0], playerPos.[1]]) with
-            |'W' -> printfn "Handle find a weapon"
-            |'$' -> printfn "Handle find gold"
-            |'P' -> printfn "Handle find pit"
-            |'!' -> printfn "Handle find wumpus"
-            |'^' -> printfn "Handle at entrance"
-            | _ -> printfn "Handle empty room"
-
-    let playerLoot (playerPos:int[]) (dungeon:char[,]) =
+    let playerLoot (playerPos:int[]) (map:char[,]) (dungeon:char[,]) =
         dungeon.SetValue('.', playerPos.[0], playerPos.[1])
+        updateMap playerPos map dungeon
 
     let rec gameLoop (playerPos:int[]) playerScore playerArmed (map:char[,]) (dungeon:char[,]) =
         
-        let updatePlayer (playerPos:int[]) (map:char[,]) (dungeon:char[,]) =
-            let input = Console.ReadKey(true).KeyChar
-            Console.Clear()
-            match input with
-                |'d' | 'a' | 's' | 'w' ->   let newPos = movePlayer input playerPos dungeon
-                                            updateMap newPos map dungeon
-                                            updateGameStatus newPos dungeon
-                                            gameLoop newPos playerScore playerArmed map dungeon
-                |'l' -> match (dungeon.[playerPos.[0], playerPos.[1]]) with
-                            |'W' -> playerLoot playerPos map
-                                    obliterateWeapons map dungeon
-                                    gameLoop playerPos playerScore true map dungeon
-                            |'$' -> playerLoot playerPos map
-                                    gameLoop playerPos (playerScore + 1) playerArmed map dungeon
-                            |_ -> printfn "You cannot loot that"
-                        gameLoop playerPos playerScore playerArmed map dungeon
-                |'r' -> printfn "Handle exiting dungeon"
-                        gameLoop playerPos playerScore playerArmed map dungeon
-                |'x' -> printfn "Handle quick exit game"
-                |'?' -> printfn "Handle printing commands"
-                        gameLoop playerPos playerScore playerArmed map dungeon
-                | _ ->  printfn "do nothing"
-                        gameLoop playerPos playerScore playerArmed map dungeon
+        printfn "%A \n" map
+        printfn "%A" dungeon
+        let input = Console.ReadKey(true).KeyChar
+        Console.Clear()
+        //printPlayerView playerPos map
+        match input with
+            |'d' | 'a' | 's' | 'w' ->   let newPos = movePlayer input playerPos dungeon
+                                        updateMap newPos map dungeon
+                                        match (dungeon.[newPos.[0], newPos.[1]]) with
+                                        | '!' ->    printfn "Handle meeting a Wumpus"
+                                        | 'P' ->    printfn "Handle meeting a Pit"
+                                        | _ ->      printfn "do nothing"
+                                        gameLoop newPos playerScore playerArmed map dungeon
+            |'l' -> match (dungeon.[playerPos.[0], playerPos.[1]]) with
+                        |'W' -> playerLoot playerPos map dungeon
+                                obliterateWeapons map dungeon
+                                gameLoop playerPos playerScore true map dungeon
+                        |'$' -> playerLoot playerPos map dungeon
+                                gameLoop playerPos (playerScore + 1) playerArmed map dungeon
+                        |_ ->   printfn "You cannot loot that"
+                                gameLoop playerPos playerScore playerArmed map dungeon
+            |'r' -> printfn "Handle exiting dungeon"
+                    printfn "You escaped the Wumpus cave with %d points" playerScore
+            |'x' -> printfn "Handle quick exit game"
+            |'?' -> printfn "Handle printing commands"
+                    gameLoop playerPos playerScore playerArmed map dungeon
+            | _ ->  printfn "do nothing"
+                    gameLoop playerPos playerScore playerArmed map dungeon
                             
         
-        printPlayerView playerPos map
-        updatePlayer playerPos map dungeon
+        
         
 
-
+    updateMap playerPosition map dungeon
     gameLoop playerPosition 0 false map dungeon
     printf "\nPress any key to continue..."
     Console.ReadKey(true) |> ignore
