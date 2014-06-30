@@ -121,16 +121,17 @@ let main argv =
             |'d' | 'a' | 's' | 'w' ->   let newPos = movePlayer input playerPos dungeon
                                         updateMap newPos map dungeon
                                         match (dungeon.[newPos.[0], newPos.[1]]) with
-                                        | '!' ->    printfn "Handle meeting a Wumpus"
-                                        | 'P' ->    printfn "Handle meeting a Pit"
+                                        | '!' ->    printfn "Handle meeting a Wumpus (+10 points or death)"
+                                        | 'P' ->    printfn "Handle meeting a Pit (death)"
+                                        | '.' ->    printfn "Handle entering empty room (+1 point or nothing)"
                                         | _ ->      printfn "do nothing"
                                         gameLoop newPos playerScore playerArmed map dungeon
             |'l' -> match (dungeon.[playerPos.[0], playerPos.[1]]) with
                         |'W' -> playerLoot playerPos map dungeon
                                 obliterateWeapons map dungeon
-                                gameLoop playerPos playerScore true map dungeon
+                                gameLoop playerPos (playerScore + 5) true map dungeon
                         |'$' -> playerLoot playerPos map dungeon
-                                gameLoop playerPos (playerScore + 1) playerArmed map dungeon
+                                gameLoop playerPos (playerScore + 5) playerArmed map dungeon
                         |_ ->   printfn "You cannot loot that"
                                 gameLoop playerPos playerScore playerArmed map dungeon
             |'r' -> printfn "Handle exiting dungeon"
