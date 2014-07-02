@@ -95,16 +95,10 @@ let main argv =
 
     let rec checkListForPath (maze:char[][]) pathFound (positions:List<int[]>) =
         if positions.IsEmpty then
-            if pathFound = 1 then
-                true
-            else
                 false
         else
-            if (positions.Head.[0] >= 0) && (positions.Head.[1] >= 0) then 
-                if (isPath maze positions.Head) then
-                    checkListForPath maze (pathFound + 1) positions.Tail
-                else
-                    checkListForPath maze pathFound positions.Tail
+            if (positions.Head.[0] >= 0) && (positions.Head.[1] >= 0) && (isPath maze positions.Head) then 
+                true
             else
                 checkListForPath maze pathFound positions.Tail
 
