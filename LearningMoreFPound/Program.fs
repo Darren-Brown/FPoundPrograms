@@ -18,6 +18,7 @@ let main argv =
     let pitTrapPercent = 0.05
     let goldPercent = 0.15
     let weaponPercent = 0.15
+    let playerViewSize = 3
 
     printf "Enter dungeon size: "
     let dungeonSize = int32 (Console.ReadLine())
@@ -77,9 +78,27 @@ let main argv =
     let map = buildFoggedMap dungeonSize
 
     let printPlayerView (playerPosition:int[]) (map:char[,]) =
-        let temp = map.[(playerPosition.[0] - 1)..(playerPosition.[0] + 1), (playerPosition.[1] - 1)..(playerPosition.[1] + 1)]
-        temp.SetValue('@', [|1; 1|])
-        printfn "%A" temp
+        
+        let constrainPositionToMin coord =
+            match coord with 
+            | x when (x - playerViewSize) < 0 -> 0
+            | _ -> coord - playerViewSize
+
+        let constrainPositionToMax coord =
+            match coord with
+            | x when (x + playerViewSize) > (dungeonSize - 1) -> dungeonSize - 1
+            | _ -> coord + playerViewSize
+               
+        let minX = constrainPositionToMin playerPosition.[0]
+        let maxX = constrainPositionToMax playerPosition.[0]
+        let minY = constrainPositionToMin playerPosition.[1]
+        let maxY = constrainPositionToMax playerPosition.[1]
+        let visibleCells = map.[minX..maxX, minY..maxY]
+        visibleCells.SetValue('@', [|(maxX - minX) / 2; (maxY - minY) / 2|])
+        printfn "%A" visibleCells
+//        let temp = map.[(playerPosition.[0] - 1)..(playerPosition.[0] + 1), (playerPosition.[1] - 1)..(playerPosition.[1] + 1)]
+//        temp.SetValue('@', [|1; 1|])
+//        printfn "%A" temp
 
     let updateMap (playerPosition:int[]) (map:char[,]) (dungeon:char[,]) =
         map.SetValue((dungeon.[playerPosition.[0], playerPosition.[1]]), playerPosition)
