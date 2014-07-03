@@ -40,10 +40,19 @@ let main argv =
         | _ -> []
       | _ -> [] 
 
+    let rec printMatrix matrix =
+        match matrix with
+        | row::rows ->
+            printfn "%A" row
+            printMatrix matrix.Tail
+        | _ -> ignore
 
-    printfn "%A\n" testArray
+    printMatrix testArray
     let test2 = transpose testArray
-    printfn "%A" test2
+
+
+    printMatrix test2
+    //printfn "%A" test2
 
     printf "\nPress any key to continue..."
     Console.ReadKey(true) |> ignore
