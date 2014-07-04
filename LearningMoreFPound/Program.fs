@@ -179,7 +179,10 @@ let main argv =
                                 gameLoop playerPos (playerScore + 5) playerArmed map dungeon
                         |_ ->   printfn "You cannot loot that"
                                 gameLoop playerPos playerScore playerArmed map dungeon
-            |'r' -> printfn "You escaped the Wumpus cave with %d points" playerScore
+            |'r' -> match (dungeon.[playerPos.[0], playerPos.[1]]) with
+                    | '^' -> printfn "You escaped the Wumpus cave with %d points" playerScore
+                    | _ ->  printfn "You cannot excape from here"
+                            gameLoop playerPos playerScore playerArmed map dungeon
             |'x' -> printfn "Thanks for playing"
             |'?' -> printfn "Handle printing commands"
                     gameLoop playerPos playerScore playerArmed map dungeon
