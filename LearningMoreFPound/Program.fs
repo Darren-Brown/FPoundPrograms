@@ -58,11 +58,14 @@ let main argv =
         let inputString = Console.ReadLine()
         if not (inputString.Equals String.Empty) then
             let nameHand = inputString.Split([|':'|])
-            let handValue = getHandValue (List.ofArray(nameHand.[1].Split([|' '|]))) 0 0 0
-            match handValue with
-            | x when x > winningTotal -> HandleInput nameHand.[0] handValue
-            | x when x = winningTotal -> HandleInput "Tie" handValue
-            | _ -> HandleInput winnersString winningTotal          
+            if nameHand.Length > 1 then
+                let handValue = getHandValue (List.ofArray(nameHand.[1].Split([|' '|]))) 0 0 0
+                match handValue with
+                | x when x > winningTotal -> HandleInput nameHand.[0] handValue
+                | x when x = winningTotal -> HandleInput "Tie" handValue
+                | _ -> HandleInput winnersString winningTotal
+            else
+                HandleInput winnersString winningTotal          
         else
             if winnersString = "Tie" || winnersString = String.Empty then
                 printf "Tie"
@@ -72,7 +75,7 @@ let main argv =
                 else
                     printf "%s has won with a hand of %d" winnersString winningTotal
         
-    HandleInput "" 0
+    HandleInput "No one" 0
 
     printf "\nPress any key to continue..."
     Console.ReadKey(true) |> ignore
