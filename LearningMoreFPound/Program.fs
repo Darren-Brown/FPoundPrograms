@@ -86,15 +86,17 @@ let main argv =
 
         let constrainPositionToMax coord =
             match coord with
-            | x when (x + playerViewSize) > (dungeonSize - 1) -> dungeonSize - 1
+            | x when (x + playerViewSize) > (dungeonSize + 1) -> dungeonSize + 1
             | _ -> coord + playerViewSize
                
         let minX = constrainPositionToMin playerPosition.[0]
         let maxX = constrainPositionToMax playerPosition.[0]
         let minY = constrainPositionToMin playerPosition.[1]
         let maxY = constrainPositionToMax playerPosition.[1]
-        let visibleCells = map.[minX..maxX, minY..maxY]
-        visibleCells.SetValue('@', [|(maxX - minX) / 2; (maxY - minY) / 2|])
+        let tempMap = Array2D.copy map
+        tempMap.SetValue('@', playerPosition)
+        let visibleCells = tempMap.[minX..maxX, minY..maxY]
+        //visibleCells.SetValue('@', [|(maxX - minX) / 2; (maxY - minY) / 2|])
         printfn "%A" visibleCells
 //        let temp = map.[(playerPosition.[0] - 1)..(playerPosition.[0] + 1), (playerPosition.[1] - 1)..(playerPosition.[1] + 1)]
 //        temp.SetValue('@', [|1; 1|])
@@ -161,7 +163,9 @@ let main argv =
                                         match (dungeon.[newPos.[0], newPos.[1]]) with
                                         | '!' ->    if  playerArmed then
                                                         printfn "You slay the Wumpus"
-                                                        playerLoot playerPos map dungeon
+                                                        //let updatedDungeon = Array2D.copy dungeon
+                                                        //updatedDungeon.SetValue('.', newPos)
+                                                        playerLoot newPos map dungeon
                                                         gameLoop newPos (playerScore + 10) playerArmed map dungeon
                                                     else
                                                         printfn "The Wumpus slays you"
