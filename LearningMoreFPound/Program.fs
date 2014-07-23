@@ -66,7 +66,6 @@ let main argv =
             for item in elementPositions do
                 dungeon.SetValue(symbol, [|fst item; snd item|])
 
-        let wumpusNumbers = Math.Floor(wumpusPercent * float (size * size))
         addElements '!' wumpusPercent (size + 1) walledDungeon
         addElements 'W' weaponPercent (size + 1) walledDungeon
         addElements 'P' pitTrapPercent (size + 1) walledDungeon
@@ -94,13 +93,9 @@ let main argv =
         let minY = constrainPositionToMin playerPosition.[1]
         let maxY = constrainPositionToMax playerPosition.[1]
         let tempMap = Array2D.copy map
-        tempMap.SetValue('@', playerPosition)
+        tempMap.SetValue('☻', playerPosition)
         let visibleCells = tempMap.[minX..maxX, minY..maxY]
-        //visibleCells.SetValue('@', [|(maxX - minX) / 2; (maxY - minY) / 2|])
         printfn "%A" visibleCells
-//        let temp = map.[(playerPosition.[0] - 1)..(playerPosition.[0] + 1), (playerPosition.[1] - 1)..(playerPosition.[1] + 1)]
-//        temp.SetValue('@', [|1; 1|])
-//        printfn "%A" temp
 
     let updateMap (playerPosition:int[]) (map:char[,]) (dungeon:char[,]) =
         map.SetValue((dungeon.[playerPosition.[0], playerPosition.[1]]), playerPosition)
@@ -174,6 +169,10 @@ let main argv =
                                                         gameLoop newPos (playerScore + 1) playerArmed map dungeon
                                                     else
                                                         gameLoop newPos playerScore playerArmed map dungeon
+                                        | '$' ->    printfn "You spy a pile of gold in the room"
+                                                    gameLoop newPos playerScore playerArmed map dungeon
+                                        | 'W' ->    printfn "You spy a weapon in the room"
+                                                    gameLoop newPos playerScore playerArmed map dungeon
                                         | _ ->      gameLoop newPos playerScore playerArmed map dungeon
             |'l' -> match (dungeon.[playerPos.[0], playerPos.[1]]) with
                         |'W' -> playerLoot playerPos map dungeon
