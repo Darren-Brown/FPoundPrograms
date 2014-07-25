@@ -138,7 +138,7 @@ let main argv =
     //printfn "%A" tempMaze
     let printMaze (maze:char[,]) =
         use wr = new StreamWriter ("maze.txt", false)
-        let sizeString = (xSize + 1).ToString() + " " + (ySize + 1).ToString()
+        let sizeString = (xSize + 2).ToString() + " " + (ySize + 2).ToString()
         wr.WriteLine (sizeString)
         for i = 0 to xSize + 1 do
             for j = 0 to ySize + 1 do
