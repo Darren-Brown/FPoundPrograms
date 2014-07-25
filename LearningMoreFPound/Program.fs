@@ -143,7 +143,7 @@ let main argv =
                 wr.Write(maze.[i,j])
                 printf "%c" maze.[i,j]
             printfn ""
-            wr.Write('\n')
+            wr.WriteLine()
 
     printMaze tempMaze
     printf "\nPress any key to continue..."
