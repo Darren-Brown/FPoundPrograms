@@ -1,7 +1,7 @@
 ﻿// Learn more about F# at http://fsharp.net
 // See the 'F# Tutorial' project for more help.
 
-
+open System.IO
 open System
 open System.Collections
 open System.Text
@@ -114,9 +114,6 @@ let main argv =
         | Wall ->   //try again
                     findPath maze position oldPos
 
-        
-        printfn "temp"
-
     let tempMaze = buildEmptyMaze xSize ySize
     findPath tempMaze [|1; 1;|] [|0; 0;|]
     for i = 1 to xSize do
@@ -138,7 +135,17 @@ let main argv =
     tempMaze.SetValue('S', [|1;1;|])
     tempMaze.SetValue('E', [|xSize;ySize;|])
 
-    printfn "%A" tempMaze
+    //printfn "%A" tempMaze
+    let printMaze (maze:char[,]) =
+        use wr = new StreamWriter ("maze.txt", false)
+        for i = 0 to xSize + 1 do
+            for j = 0 to ySize + 1 do
+                wr.Write(maze.[i,j])
+                printf "%c" maze.[i,j]
+            printfn ""
+            wr.Write('\n')
+
+    printMaze tempMaze
     printf "\nPress any key to continue..."
     Console.ReadKey(true) |> ignore
     0 // return an integer exit code
