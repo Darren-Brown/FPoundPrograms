@@ -3,6 +3,8 @@
 
 
 open System
+open System.IO
+open System.Drawing
 open System.Collections
 open System.Text
 open System.Threading
@@ -58,6 +60,29 @@ let main argv =
                 cprintf (enum<ConsoleColor>(board.[i,j])) "#"
             printfn ""
 
+    let printMaze (maze:int[,]) =
+        use wr = new StreamWriter ("maze.txt", false)
+        //let sizeString = (areaSize + 2).ToString() + " " + (ySize + 2).ToString()
+        //wr.WriteLine (sizeString)
+        for i = 0 to (areaSize - 1) do
+            for j = 0 to (areaSize - 1) do
+                wr.Write(maze.[i,j])
+            wr.WriteLine()
+
+    let printMazeImage (maze:int[,]) =
+        let test = new Bitmap(areaSize, areaSize)
+//        let testCC = (enum<ConsoleColor>(board.[0,0]))
+//        let test2 = testCC.ToString()
+//        let testC = Color.FromName test2
+//        //use wr = new StreamWriter ("maze.txt", false)
+//        //let sizeString = (areaSize + 2).ToString() + " " + (ySize + 2).ToString()
+//        //wr.WriteLine (sizeString)
+        for i = 0 to (areaSize - 1) do
+            for j = 0 to (areaSize - 1) do
+                test.SetPixel(i, j, (Color.FromName ((enum<ConsoleColor>(maze.[i,j])).ToString())))
+        
+        test.Save("daBoard.bmp", System.Drawing.Imaging.ImageFormat.Bmp)
+
     let turnAnt currentDirection turnDirection =
         match turnDirection with
         | 'L' ->    let newdir = currentDirection - 1
@@ -102,18 +127,25 @@ let main argv =
         let newPosition = getNewAntPosition antPosition newDirection
         board.SetValue ((board.[antPosition.[0], antPosition.[1]] + 1) % (inputDirectionArray.Length), antPosition)
         
-        Console.Clear()
-        printBoard board
-        Thread.Sleep(50)
-        mainLoop newPosition newDirection board 0
-//        if count > 1 then
-//            Console.Clear()
-//            printBoard board
-//            Thread.Sleep(100)
-//            mainLoop newPosition newDirection board 0
-//        else
-//            mainLoop newPosition newDirection board (count + 1)
+//        Console.Clear()
+//        printBoard board
+//        Thread.Sleep(50)
+//        mainLoop newPosition newDirection board 0
+        if count > 100000000 then
+            //Console.Clear()
+            printfn "began printing board at %s" (DateTime.Now.ToString())
+            //printBoard board
+            
+            //printMaze board
+            printMazeImage board
+            printfn "new board generated at %s" (DateTime.Now.ToString())
 
+            mainLoop newPosition newDirection board 0
+        else
+            mainLoop newPosition newDirection board (count + 1)
+
+
+    printMazeImage board
     mainLoop initialPosition 0 board 0
     printf "\nPress any key to continue..."
     Console.ReadKey(true) |> ignore
