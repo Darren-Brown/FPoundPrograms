@@ -85,41 +85,26 @@ let main argv =
 
     let turnAnt currentDirection turnDirection =
         match turnDirection with
-        | 'L' ->    let newdir = currentDirection - 1
-                    if newdir < 0 then
-                        3
-                    else
-                        newdir
-        | 'R' ->    (currentDirection + 1) % 4
+        | 'L' ->    Math.Abs(((currentDirection - 1) + 4) % 4)
+        | 'R' ->    Math.Abs(((currentDirection + 1) + 4) % 4)
         | _ ->      currentDirection
 
     let getNewAntPosition (curPosition:int[]) direction =
         match direction with
         //north
         | 0 ->  let newY = curPosition.[1] - 1
-                if newY < 0 then
-                    [| curPosition.[0]; (areaSize - 1);|]
-                else
-                    [| curPosition.[0]; newY;|]
+                [| curPosition.[0]; Math.Abs(((newY) + areaSize) % areaSize);|]
         //east
         | 1 ->  let newX = curPosition.[0] + 1
-                if newX = areaSize then
-                    [|0; curPosition.[1]|]
-                else
-                    [|newX; curPosition.[1]|]
+                [| Math.Abs(((newX) + areaSize) % areaSize); curPosition.[1];|]
         //south
         | 2 ->  let newY = curPosition.[1] + 1
-                if newY = areaSize then
-                    [| curPosition.[0]; 0;|]
-                else
-                    [| curPosition.[0]; newY;|]     
+                [| curPosition.[0]; Math.Abs(((newY) + areaSize) % areaSize);|]     
         // west
         | 3 ->  let newX = curPosition.[0] - 1
-                if newX < 0 then
-                    [|(areaSize - 1); curPosition.[1]|]
-                else
-                    [|newX; curPosition.[1]|]
+                [| Math.Abs(((newX) + areaSize) % areaSize); curPosition.[1];|]
         | _ -> curPosition
+    
 
     let rec mainLoop (antPosition:int[]) antDirection (board:int[,]) count=
 
@@ -131,7 +116,7 @@ let main argv =
 //        printBoard board
 //        Thread.Sleep(50)
 //        mainLoop newPosition newDirection board 0
-        if count > 100000000 then
+        if count > 2000 then
             //Console.Clear()
             printfn "began printing board at %s" (DateTime.Now.ToString())
             //printBoard board
@@ -139,7 +124,7 @@ let main argv =
             //printMaze board
             printMazeImage board
             printfn "new board generated at %s" (DateTime.Now.ToString())
-
+            Console.ReadKey(true) |> ignore
             mainLoop newPosition newDirection board 0
         else
             mainLoop newPosition newDirection board (count + 1)
