@@ -38,6 +38,9 @@ let main argv =
     printf "Please enter area size:"
     let areaSize = Int32.Parse(Console.ReadLine())
 
+    let colorIncrement = 255 / inputDirectionArray.Length
+    let colorArray = Array.init (inputDirectionArray.Length) (fun index -> Color.FromArgb((index * colorIncrement), (Math.Max(0, (index * colorIncrement - 150))), (index * colorIncrement)))
+
     //Create color/direction mapping
 //    let colorArray = (ConsoleColor.GetValues (typeof<ConsoleColor>))
 //    let tempArray = [| for i in 0 .. (inputDirectionArray.Length - 1) -> i |]
@@ -79,7 +82,8 @@ let main argv =
 //        //wr.WriteLine (sizeString)
         for i = 0 to (areaSize - 1) do
             for j = 0 to (areaSize - 1) do
-                test.SetPixel(i, j, (Color.FromName ((enum<ConsoleColor>(maze.[i,j])).ToString())))
+//                test.SetPixel(i, j, (Color.FromName ((enum<ConsoleColor>(maze.[i,j])).ToString())))
+                test.SetPixel(i, j, colorArray.[maze.[i,j]])
         
         test.Save("daBoard.bmp", System.Drawing.Imaging.ImageFormat.Bmp)
 
@@ -116,7 +120,7 @@ let main argv =
 //        printBoard board
 //        Thread.Sleep(50)
 //        mainLoop newPosition newDirection board 0
-        if count > 2000 then
+        if count > 20000000 then
             //Console.Clear()
             printfn "began printing board at %s" (DateTime.Now.ToString())
             //printBoard board
@@ -124,7 +128,7 @@ let main argv =
             //printMaze board
             printMazeImage board
             printfn "new board generated at %s" (DateTime.Now.ToString())
-            Console.ReadKey(true) |> ignore
+            //Console.ReadKey(true) |> ignore
             mainLoop newPosition newDirection board 0
         else
             mainLoop newPosition newDirection board (count + 1)
