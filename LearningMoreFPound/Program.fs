@@ -4,6 +4,8 @@
 
 open System
 open System.IO
+open System.Windows.Forms
+open System.ComponentModel
 open System.Drawing
 open System.Collections
 open System.Text
@@ -35,7 +37,7 @@ let main argv =
         printfn ""
 
     printf "Please enter direction string size:"
-    let inputSize = Int32.Parse(Console.ReadLine())
+    let inputSize = Math.Min(Int32.Parse(Console.ReadLine()), 765)
     let generateDirection inputVal=
         match inputVal with
         | 0 -> 'L'
@@ -45,9 +47,12 @@ let main argv =
     printf "Please enter area size:"
     let areaSize = Int32.Parse(Console.ReadLine())
 
-    let colorIncrement = 255 / inputSize
-    let colorArray = Array.init (inputSize) (fun index -> Color.FromArgb((index * colorIncrement), (Math.Max(0, (index * colorIncrement - 150))), (index * colorIncrement)))
-    
+    let colorIncrement = Math.Max(1, 255 / inputSize)
+    //let colorArray = Array.init (inputSize) (fun index -> Color.FromArgb(Math.Min(255, (index * colorIncrement)), 255, 255))
+    //let colorArray = Array.init (inputSize) (fun index -> Color.FromArgb(Math.Min(255, (index * colorIncrement)), (Math.Min(255, Math.Max(0, (index - 100) * colorIncrement))), Math.Min(50, (colorIncrement * index)/6)))
+    let colorArray = Array.init (inputSize) (fun index -> Color.FromArgb(Math.Min(255, (index * colorIncrement)), (Math.Min(255, Math.Max(0, (index - (inputSize/3)) * colorIncrement))), (Math.Min(255, Math.Max(0, (index - (2*inputSize/3)) * colorIncrement)))))
+    //    let colorArray = Array.init (inputSize) (fun index -> Color.FromArgb((Math.Min(255, index * colorIncrement)), (Math.Min(255, Math.Max( 0, (index - 510) * colorIncrement))), (Math.Min(255, Math.Max( 0, (index - 255) * colorIncrement)))))
+
     let initialPosition = [|(areaSize/2); (areaSize/2)|]
 
     let printBoardImage (maze:int[,]) =
@@ -101,7 +106,7 @@ let main argv =
                 printfn "began printing board at %s" (DateTime.Now.ToString())
                 printBoardImage board
                 printfn "new board generated at %s" (DateTime.Now.ToString())
-                Thread.Sleep(2000)
+                Thread.Sleep(1500)
                 if terminateCountdown < 1 then
                     printfn "finished pattern %A" directionArray
                     Thread.Sleep(5000)
@@ -115,9 +120,11 @@ let main argv =
         runAnt inputDirectionArray initialPosition 0 board printAtInterval terminateAtInterval
         mainLoop patternSize printAtInterval terminateAtInterval
 
+    
+    
 
    // printMazeImage board
-    mainLoop inputSize 20000 15
+    mainLoop inputSize 1000000 (60)
     printf "\nPress any key to continue..."
     Console.ReadKey(true) |> ignore
     0 // return an integer exit code
