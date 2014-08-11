@@ -18,24 +18,6 @@ open Microsoft.FSharp.Reflection
 let main argv = 
     let rand = new System.Random ()
 
-    /// Colored printf
-    let cprintf c fmt = 
-
-        Printf.kprintf 
-            (fun s -> 
-                let old = System.Console.ForegroundColor 
-                try 
-                  System.Console.ForegroundColor <- c;
-                  System.Console.Write s
-                finally
-                  System.Console.ForegroundColor <- old) 
-            fmt
-        
-    // Colored printfn
-    let cprintfn c fmt = 
-        cprintf c fmt
-        printfn ""
-
 //    printf "Please enter direction string size:"
     //let inputSize = Math.Min(Int32.Parse(Console.ReadLine()), 111765)
     let inputSize = 4080
@@ -65,12 +47,6 @@ let main argv =
     let initialPosition = [|0;0|]
     let printBoardImage (maze:int[,]) =
         let test = new Bitmap(xSize, ySize)
-//        let testCC = (enum<ConsoleColor>(board.[0,0]))
-//        let test2 = testCC.ToString()
-//        let testC = Color.FromName test2
-//        //use wr = new StreamWriter ("maze.txt", false)
-//        //let sizeString = (areaSize + 2).ToString() + " " + (ySize + 2).ToString()
-//        //wr.WriteLine (sizeString)
         for i = 0 to (xSize - 1) do
             for j = 0 to (ySize - 1) do
 //                test.SetPixel(i, j, (Color.FromName ((enum<ConsoleColor>(maze.[i,j])).ToString())))
@@ -80,24 +56,24 @@ let main argv =
 
     let turnAnt currentDirection turnDirection =
         match turnDirection with
-        | 'L' ->    Math.Abs(((currentDirection - 1) + 4) % 4)
-        | 'R' ->    Math.Abs(((currentDirection + 1) + 4) % 4)
+        | 'L' ->    (currentDirection + 3) % 4
+        | 'R' ->    (currentDirection + 1) % 4
         | _ ->      currentDirection
 
     let getNewAntPosition (curPosition:int[]) direction =
         match direction with
         //north
         | 0 ->  let newY = curPosition.[1] - 1
-                [| curPosition.[0]; Math.Abs(((newY) + ySize) % ySize);|]
+                [| curPosition.[0]; ((newY) + ySize) % ySize;|]
         //east
         | 1 ->  let newX = curPosition.[0] + 1
-                [| Math.Abs(((newX) + xSize) % xSize); curPosition.[1];|]
+                [|(newX % xSize); curPosition.[1];|]
         //south
         | 2 ->  let newY = curPosition.[1] + 1
-                [| curPosition.[0]; Math.Abs(((newY) + ySize) % ySize);|]     
+                [| curPosition.[0]; (newY % ySize);|]     
         // west
         | 3 ->  let newX = curPosition.[0] - 1
-                [| Math.Abs(((newX) + xSize) % xSize); curPosition.[1];|]
+                [| (newX + xSize) % xSize; curPosition.[1];|]
         | _ -> curPosition
 
     let rec mainLoop patternSize printAtInterval terminateAtInterval=
@@ -120,13 +96,17 @@ let main argv =
             else
                 runAnt directionArray newPosition newDirection board (printCountdown - 1L) terminateCountdown          
 
-        let inputDirectionArray = Array.init patternSize (fun _ -> rand.Next(0, 2) |> generateDirection)
+        //let inputDirectionArray = Array.init patternSize (fun _ -> rand.Next(0, 2) |> generateDirection)
+        let inputDirectionArray = Array.init patternSize (fun index -> match index % 4 with
+                                                                       | 0 | 1 -> 'L'
+                                                                       | 2 | 3 -> 'R'
+                                                                       | _ -> 'E' )
         let board = Array2D.init xSize ySize (fun _ _ -> 0)
         runAnt inputDirectionArray initialPosition 0 board printAtInterval terminateAtInterval
         mainLoop patternSize printAtInterval terminateAtInterval
 
     // printMazeImage board
-    mainLoop inputSize 500000000L (5)
+    mainLoop inputSize 5000000L (5)
     printf "\nPress any key to continue..."
     Console.ReadKey(true) |> ignore
     0 // return an integer exit code
