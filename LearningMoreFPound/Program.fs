@@ -3,6 +3,7 @@
 
 
 open System
+open System.IO
 open System.Collections
 open System.Text
 open System.Threading
@@ -14,16 +15,18 @@ open Microsoft.FSharp.Reflection
 let main argv = 
     let rand = new Random()
     
-    printf "Please enter learning text: "
-    let rec getInput (allInputs:List<string>) =
-        let input = Console.ReadLine()
-        if input = ";;" then
-            allInputs
-        else
-            let inputList = input.Split([|' '|]) |> Array.toList
-            getInput (List.append allInputs inputList)
+    let getInputFromFile (filepath:string)  =
+        use sr = new StreamReader (filepath)
+        let rec buildInputList (tempList:List<string>) (sr:StreamReader) =
+            if not sr.EndOfStream then
+                let temp = sr.ReadLine().Split([|' '|]) |> Array.toList
+                buildInputList (List.append tempList temp) sr
+            else
+                tempList
 
-    let input = getInput List.Empty
+        buildInputList List.Empty sr
+
+    let input = (getInputFromFile "input.txt") |> Seq.toList 
 
     let rec learn prevWord (inputList:List<string>) (dict:Map<string, List<string>>) =
         let curWord = inputList.Head
@@ -69,15 +72,15 @@ let main argv =
             let newKey = (currentKey.Split([|' '|]).[1]) + " " + randomString
                     
             if newKey.Contains(".") then
-                printf "\b%s" randomString
+                printfn "\b%s" randomString
             else
                 printf "%s " (randomString)
                 printString newKey dict rnd
 
         printString randomStartKey dict rnd
 
-
-    generateString test rand
+    for i = 0 to 10 do
+        generateString test rand
     printf "\nPress any key to continue..."
     Console.ReadKey(true) |> ignore
     0 // return an integer exit code
