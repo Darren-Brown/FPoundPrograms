@@ -18,26 +18,25 @@ let main argv =
     let rnd = System.Random()
 
     printf "Enter maze X dimension:"
-    let xSize = Int32.Parse(Console.ReadLine())
+    let xSize = Int32.Parse(Console.ReadLine()) * 2 - 1
     printf "Enter maze Y dimension:"
-    let ySize = Int32.Parse(Console.ReadLine())
+    let ySize = Int32.Parse(Console.ReadLine()) * 2 - 1
     let initialPosition = [|1; 1|]
-    
 
     let buildEmptyMaze xDim yDim =
-        let emptyMaze = Array2D.create (xSize + 2) (ySize + 2) '#'
-
-        let wallMaze xDim yDim (maze:char[,]) =
-            for i = 1 to xDim do
-                for j = 1 to yDim do
-                    maze.SetValue (' ', [|i; j;|])
-
-            maze
-        
-        let tempMaze = wallMaze xDim yDim emptyMaze
-        tempMaze.SetValue('*', [|1; 1;|])
-        //tempMaze.SetValue('E', [|xDim; yDim;|])
-        tempMaze
+        Array2D.init (xDim + 2) (yDim + 2) (fun xIndex yIndex ->  match xIndex with
+                                                                    | 0  ->  '#'
+                                                                    | outside when outside = (xSize + 1) -> '#'
+                                                                    | 1 ->  match yIndex with
+                                                                            | 1 -> '*'
+                                                                            | _ ->  match yIndex with
+                                                                                    | 0 -> '#'
+                                                                                    | outside when outside = (ySize + 1) -> '#'
+                                                                                    | _ -> ' '
+                                                                    | _ ->  match yIndex with
+                                                                            | 0 -> '#'
+                                                                            | outside when outside = (ySize + 1) -> '#'
+                                                                            | _ -> ' ')
 
     let rec findPath (maze:char[,]) (position:int[]) (oldPos:int[])=
 //        Console.Clear()
@@ -147,7 +146,24 @@ let main argv =
             printfn ""
             wr.WriteLine()
 
-    printMaze tempMaze
+
+    let getColorForCharacter value =
+        match value with
+        | ' ' -> Drawing.Color.Black
+        | 'E' -> Drawing.Color.Red
+        | 'S' -> Drawing.Color.Pink
+        | _ -> Drawing.Color.Green
+
+    let drawMaze (maze:char[,])=
+        let bitmap = new System.Drawing.Bitmap(xSize + 2, ySize + 2)
+        for i = 0 to xSize + 1 do
+            for j = 0 to ySize + 1 do
+                bitmap.SetPixel(i, j, (getColorForCharacter maze.[i,j]))
+        bitmap.Save("Maze.bmp")
+
+
+    //printMaze tempMaze
+    drawMaze tempMaze
     printf "\nPress any key to continue..."
     Console.ReadKey(true) |> ignore
     0 // return an integer exit code
