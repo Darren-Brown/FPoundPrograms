@@ -20,7 +20,7 @@ let main argv =
 
 //    printf "Please enter direction string size:"
     //let inputSize = Math.Min(Int32.Parse(Console.ReadLine()), 111765)
-    let inputSize = 4080
+    let inputSize = 16320
     let generateDirection inputVal=
         match inputVal with
         | 0 -> 'L'
@@ -38,7 +38,7 @@ let main argv =
 
     let colorIncrement = Math.Max(1, 255 / inputSize)
     //let colorArray = Array.init (inputSize) (fun index -> Color.FromArgb(index % 255, (index / 255) % 255, (index / 65025) % 255))
-    let colorFunction index = Color.FromArgb((index / 16) % 255, ( index / 4) % 255, ( index % 255))
+    let colorFunction index = Color.FromArgb((index / 64) % 255, ( index / 8) % 255, ( index % 255))
     //let colorArray = Array.init (inputSize) (fun index -> Color.FromArgb(Math.Min(255, (index * colorIncrement)), (Math.Min(255, Math.Max(0, (index - 100) * colorIncrement))), Math.Min(50, (colorIncrement * index)/6)))
     //let colorArray = Array.init (inputSize) (fun index -> Color.FromArgb( (Math.Min(255, Math.Max(0, (index - (2*inputSize/3)) * colorIncrement))), (Math.Min(255, Math.Max(0, (index - (inputSize/2)) * colorIncrement))), Math.Min(255, (index * colorIncrement))))
     //let colorArray = Array.init (inputSize) (fun index -> Color.FromArgb( (Math.Min(200, Math.Max(0, (index - (2*inputSize/3)) * colorIncrement))), (Math.Min(200, Math.Max(0, (index - (inputSize/2)) * colorIncrement))), Math.Min(200, (index * colorIncrement))))
