@@ -106,16 +106,19 @@ let main argv =
 
 
         let rec printString currentKey (dict:Map<string, List<string>>) (rnd:Random) =
-            let potentials = dict.Item(currentKey)
-            let randomIndex = rnd.Next(0, potentials.Length)
-            let randomString = potentials.[randomIndex]
-            let newKey = (currentKey.Split([|' '|]).[1]) + " " + randomString
+            if dict.ContainsKey(currentKey) then
+                let potentials = dict.Item(currentKey)
+                let randomIndex = rnd.Next(0, potentials.Length)
+                let randomString = potentials.[randomIndex]
+                let newKey = (currentKey.Split([|' '|]).[1]) + " " + randomString
                     
-            if newKey.Contains(".") then
-                printfn "\b%s" randomString
+                if newKey.Contains(".") then
+                    printfn "\b%s" randomString
+                else
+                    printf "%s " (randomString)
+                    printString newKey dict rnd
             else
-                printf "%s " (randomString)
-                printString newKey dict rnd
+                printfn "\b."
 
         let startKey = getActionKey dict rnd
         printf "%s " startKey
