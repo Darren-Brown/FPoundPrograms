@@ -47,20 +47,23 @@ let main argv =
                         | true ->   let entry = dict.Item(curKey)
                                     let tempDict = dict.Remove(curKey)
                                     let newPossibilitesList = match isStop with 
-                                                                | true -> "." :: (nextValue :: entry)
+                                                                | true -> "." :: entry
                                                                 | false -> nextValue :: entry
                                     tempDict.Add(curKey, newPossibilitesList)
                         | false ->  match isStop with
-                                    | true -> dict.Add(curKey, "." :: (nextValue::List.Empty))
+                                    | true -> dict.Add(curKey, "." :: List.Empty)
                                     | false -> dict.Add(curKey, nextValue::List.Empty)
         if inputList.Tail.IsEmpty then
             newDict
         else
-            learn cleanWord inputList.Tail newDict
+            if isStop then
+                learn nextValue inputList.Tail.Tail newDict
+            else
+                learn cleanWord inputList.Tail newDict
              
     let test = learn input.Head input.Tail Map.empty
 
-    let generateString (dict:Map<string, List<string>>) (rnd:Random) =
+    let generateString (dict:Map<string, List<string>>) (rnd:Random) =       
         let randomStart = rnd.Next(1, dict.Count)
         let randomStartList = (Map.toArray dict).[randomStart]
         let randomStartKey = (fst randomStartList)
