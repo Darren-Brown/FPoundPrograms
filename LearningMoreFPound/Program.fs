@@ -32,7 +32,7 @@ let main argv =
 
         buildInputList List.Empty sr
 
-    let input = (getInputFromFile "input.txt") |> Seq.toList 
+    let input = (getInputFromFile "input.txt")
 
     let rec learn prevWord (inputList:List<string>) (dict:Map<string, List<string>>) =
         let curWord = inputList.Head
@@ -82,8 +82,6 @@ let main argv =
                 buildActionList dict.Tail rnd partialList
 
     let generateAction (dict:Map<string, List<string>>) (rnd:Random) =
-        
-
         let rec getActionKey (dict:Map<string, List<string>>) (rnd:Random) =
             let rec getProbTotal (list:List<probabilityContainer>) subtotal =
                 if list.IsEmpty then
@@ -105,7 +103,7 @@ let main argv =
             getActionFromInt 0 actions randomActionInt
 
 
-        let rec printString currentKey (dict:Map<string, List<string>>) (rnd:Random) =
+        let rec generateString currentKey subAction (dict:Map<string, List<string>>) (rnd:Random) =
             if dict.ContainsKey(currentKey) then
                 let potentials = dict.Item(currentKey)
                 let randomIndex = rnd.Next(0, potentials.Length)
@@ -113,20 +111,46 @@ let main argv =
                 let newKey = (currentKey.Split([|' '|]).[1]) + " " + randomString
                     
                 if newKey.Contains(".") then
-                    printfn "\b%s" randomString
+                    subAction + "."
                 else
-                    printf "%s " (randomString)
-                    printString newKey dict rnd
+                    generateString newKey (subAction + " " + randomString) dict rnd
             else
-                printfn "\b."
+                subAction + "."
 
         let startKey = getActionKey dict rnd
-        printf "%s " startKey
-        printString startKey dict rnd
+        generateString startKey startKey dict rnd
 
+    let rec mainLoop (history:List<string>) (dict:Map<string, List<string>>) (rnd:Random) =
+        let printHistory (history:List<string>) =
+            for i in history do
+                printfn "%s" i
 
-    for i = 0 to 10 do
-        generateAction test rand
+        let addActionToHistory action (history:List<string>) =
+            let workingHistory = match history.Length with
+                                    | x when x > 10 -> history.Tail
+                                    | _ -> history
+            List.append workingHistory [action;]
+
+        Console.Clear()
+
+        printfn "Welcome to the Markov Bot v1"
+        printfn "Press the spacebar to generate an action. Press the x key to exit"
+        for i = 0 to 79 do
+            printf "-"
+        printfn "Recently generated actions:"
+        printHistory history
+
+        let input = Console.ReadKey()
+        printfn ""
+        match input.Key with
+        | ConsoleKey.Spacebar ->    let action = generateAction dict rand
+                                    let updatedHistory = addActionToHistory action history
+                                    mainLoop updatedHistory dict rnd
+        | ConsoleKey.X ->    printfn "Goodbye"
+        | _ -> mainLoop history dict rnd
+
+    mainLoop List.Empty test rand
+
     printf "\nPress any key to continue..."
     Console.ReadKey(true) |> ignore
     0 // return an integer exit code
