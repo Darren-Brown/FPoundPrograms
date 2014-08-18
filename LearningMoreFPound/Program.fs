@@ -53,7 +53,7 @@ let main argv =
                         | false ->  match isStop with
                                     | true -> dict.Add(curKey, "." :: List.Empty)
                                     | false -> dict.Add(curKey, nextValue::List.Empty)
-        if inputList.Tail.IsEmpty then
+        if inputList.Tail.Tail.IsEmpty then
             newDict
         else
             if isStop then
@@ -74,7 +74,7 @@ let main argv =
             let randomString = potentials.[randomIndex]
             let newKey = (currentKey.Split([|' '|]).[1]) + " " + randomString
                     
-            if newKey.Contains(".") then
+            if newKey.EndsWith(".") then
                 printfn "\b%s" randomString
             else
                 printf "%s " (randomString)
