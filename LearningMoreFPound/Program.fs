@@ -4,17 +4,11 @@
 
 open System
 open System.IO
-open System.Collections
-open System.Text
-open System.Threading
-open System.Text.RegularExpressions
-open System.Diagnostics
-open Microsoft.FSharp.Reflection
 
 [<EntryPoint>]
 let main argv = 
     let rand = new Random()
-    
+
     let getInputFromFile (filepath:string)  =
         use sr = new StreamReader (filepath)
         let rec buildInputList (tempList:List<char>) (sr:StreamReader) =
@@ -25,8 +19,6 @@ let main argv =
                 tempList
 
         buildInputList List.Empty sr
-
-    let input = (getInputFromFile "input.txt") 
 
     let rec learn (key:string) (inputList:List<char>) (dict:Map<string, List<char>>) keyLength =
         let curChar = inputList.Head
@@ -44,8 +36,6 @@ let main argv =
             else
                 learn (key.Substring(1, key.Length - 1) + curChar.ToString()) inputList.Tail newDict keyLength
              
-    let test = learn "" input Map.empty 3
-
     let rec generateString (dict:Map<string, List<char>>) (rnd:Random) =      
 
         let rec getKeyWithLeadingCapital (dict:Map<string, List<char>>) (rnd:Random) =
@@ -73,18 +63,17 @@ let main argv =
         let randomDictKey = getKeyWithLeadingCapital dict rnd
         buildString (randomDictKey.ToCharArray() |> Array.toList |> List.rev) randomDictKey dict rnd
 
-//    for i = 0 to 10 do
-//        let testString = generateString List.Empty test rand
-//        printfn "%s" testString
-
-    let rec infiniGen () =
+    let rec infiniGen (dictionary:Map<string, List<char>>) =
         Console.Clear()
-        printfn "%s" (generateString test rand)
+        printfn "%s" (generateString dictionary rand)
         let input = Console.ReadKey(true).KeyChar
         if not (input.Equals 'x') then            
-            infiniGen ()
+            infiniGen dictionary
 
-    infiniGen()
+    let input = (getInputFromFile "input.txt") 
+    let dictionary = learn "" input Map.empty 3
+
+    infiniGen dictionary
     printf "\nPress any key to continue..."
     Console.ReadKey(true) |> ignore
     0 // return an integer exit code
