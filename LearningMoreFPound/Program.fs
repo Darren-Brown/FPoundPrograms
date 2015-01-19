@@ -8,13 +8,43 @@ open System.Text
 open System.Threading
 open System.Text.RegularExpressions
 open System.Diagnostics
+open System.Drawing
 open Microsoft.FSharp.Reflection
+
+[<Literal>]
+let sacrificialLamb = 1
+let spaceColor = Color.Black
+let endColor = Color.Red
+let startColor = Color.Pink
+let wallColor = Color.Green
+let pathColor = Color.Teal
 
 [<EntryPoint>]
 let main argv = 
 
     // Note: does not handle paths with halls wider than 1 x 1
     // Note: at some point, x and y became swapped; I don't want to unswap because I might break it
+
+
+    let img = "Maze.bmp"
+
+    let bitmaze = new System.Drawing.Bitmap(img);
+    
+    //let lockedBitmap = bitmaze.LockBits(Rectangle(0, 0, bitmaze.Width, bitmaze.Height), Imaging.ImageLockMode.ReadOnly, Imaging.PixelFormat.Format32bppArgb)
+
+    let getPixelColorOfImage xIndex yIndex (image:Bitmap) =
+        image.GetPixel(xIndex, yIndex)
+
+    let getMazeSymbolFromColor (color:Color) =
+        match color.ToArgb() with
+        | c when c = startColor.ToArgb() -> 'S'
+        | c when c = endColor.ToArgb() -> 'E'
+        | c when c = wallColor.ToArgb() -> '#'
+        | c when c = spaceColor.ToArgb() -> ' '
+        | _ -> '@'
+
+    let testMaze = Array2D.init bitmaze.Width bitmaze.Height (fun x y -> bitmaze.GetPixel(x, y) |> getMazeSymbolFromColor )
+    printfn "%A" testMaze
 
     let startCharacter = 'S'
     let endCharacter = 'E'
@@ -173,10 +203,13 @@ let main argv =
             updatePosition maze
 
     
-    let finalMze = depthFirstSearch maze startPoint (new System.Collections.Generic.Queue<int[]>())
+    //let finalMze = depthFirstSearch maze startPoint (new System.Collections.Generic.Queue<int[]>())
+    let finalMze = depthFirstSearch testMaze startPoint (new System.Collections.Generic.Queue<int[]>())
+
     Console.Clear()
     printBoardWithPath finalMze
     //gameLoop maze startPoint
+
 
     printf "\nPress any key to continue..."
     Console.ReadKey(true) |> ignore
