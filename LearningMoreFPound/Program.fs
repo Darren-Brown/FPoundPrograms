@@ -30,8 +30,6 @@ let main argv =
 
     let bitmaze = new System.Drawing.Bitmap(img);
     
-    //let lockedBitmap = bitmaze.LockBits(Rectangle(0, 0, bitmaze.Width, bitmaze.Height), Imaging.ImageLockMode.ReadOnly, Imaging.PixelFormat.Format32bppArgb)
-
     let getPixelColorOfImage xIndex yIndex (image:Bitmap) =
         image.GetPixel(xIndex, yIndex)
 
@@ -43,16 +41,15 @@ let main argv =
         | c when c = spaceColor.ToArgb() -> ' '
         | _ -> '@'
 
-    let testMaze = Array2D.init bitmaze.Width bitmaze.Height (fun x y -> bitmaze.GetPixel(x, y) |> getMazeSymbolFromColor )
-    printfn "%A" testMaze
+    let getPixelRow heightIndex (bitmap:Bitmap) =
+        Array.init bitmap.Width (fun index -> bitmap.GetPixel(index, heightIndex) |> getMazeSymbolFromColor)
+        
+    let maze = Array.init bitmaze.Height (fun index -> getPixelRow index bitmaze)
 
     let startCharacter = 'S'
     let endCharacter = 'E'
-    let controlData = Console.ReadLine().Split[|' '|]
-    let xDim = int32 controlData.[0]
-    let yDim = int32 controlData.[1]
-
-    let maze = [| for i in 0 .. yDim - 1 -> (Console.ReadLine().ToCharArray())|]
+    let xDim = bitmaze.Width
+    let yDim = bitmaze.Height
 
     let findCharacterInRow  (row:char[]) (desiredChar:char) =
         let index = Array.tryFindIndex (fun y -> y = desiredChar) row
@@ -202,12 +199,10 @@ let main argv =
         else
             updatePosition maze
 
-    
-    //let finalMze = depthFirstSearch maze startPoint (new System.Collections.Generic.Queue<int[]>())
-    let finalMze = depthFirstSearch testMaze startPoint (new System.Collections.Generic.Queue<int[]>())
+    let finalMaze = depthFirstSearch maze startPoint (new System.Collections.Generic.Queue<int[]>())
 
     Console.Clear()
-    printBoardWithPath finalMze
+    printBoardWithPath finalMaze
     //gameLoop maze startPoint
 
 
