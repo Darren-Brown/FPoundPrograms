@@ -18,10 +18,33 @@ let main argv =
     let rnd = System.Random()
 
     printf "Enter maze X dimension:"
-    let xSize = Int32.Parse(Console.ReadLine()) * 2 - 1
+    let xInputSize = Int32.Parse(Console.ReadLine())
+    let xSize =  xInputSize * 2 - 1
     printf "Enter maze Y dimension:"
-    let ySize = Int32.Parse(Console.ReadLine()) * 2 - 1
-    let initialPosition = [|1; 1|]
+    let yInputSize = Int32.Parse(Console.ReadLine())
+    let ySize =  yInputSize * 2 - 1
+
+    let rec generateRandomValidPosition (notValidPositions:List<int[]>) inputSizeX inputSizeY =
+        let generateRandomAxisPosition axisSize =
+           rnd.Next(3,  axisSize) * 2 - 1
+        
+        let potential = [|generateRandomAxisPosition inputSizeX; generateRandomAxisPosition inputSizeY;|]
+
+        if (List.tryFind (fun (x:int[]) -> x.[0].Equals potential.[0] && x.[1].Equals potential.[1]) notValidPositions).IsSome then
+            generateRandomValidPosition notValidPositions inputSizeX inputSizeY
+        else
+            potential
+
+    //let startX = generateRandomValidAxisPosition List.empty xInputSize yInputSize
+    //let startY = generateRandomValidAxisPosition 
+    //let initialPosition = [| startX; 11|]
+    let initialPosition = generateRandomValidPosition List.empty xInputSize yInputSize
+    let endPosition = generateRandomValidPosition [initialPosition] xInputSize yInputSize
+
+    printfn "%A" initialPosition
+    printfn "%A" endPosition
+
+    printfn "end testing"
 
     let buildEmptyMaze xDim yDim =
         Array2D.init (xDim + 2) (yDim + 2) (fun xIndex yIndex ->  match xIndex with
@@ -114,7 +137,7 @@ let main argv =
                     findPath maze position oldPos
 
     let tempMaze = buildEmptyMaze xSize ySize
-    findPath tempMaze [|1; 1;|] [|0; 0;|]
+    findPath tempMaze initialPosition [|0; 0;|]
     for i = 1 to xSize do
         if i % 2 = 1 then
             for j = 1 to ySize do
@@ -131,8 +154,8 @@ let main argv =
                 | _ -> '#'
             tempMaze.SetValue(replaceValue, [|i;j;|])
 
-    tempMaze.SetValue('S', [|1;1;|])
-    tempMaze.SetValue('E', [|xSize;ySize;|])
+    tempMaze.SetValue('S', initialPosition)
+    tempMaze.SetValue('E', endPosition)
 
     //printfn "%A" tempMaze
     let printMaze (maze:char[,]) =
