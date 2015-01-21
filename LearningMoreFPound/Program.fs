@@ -24,7 +24,7 @@ let main argv =
 
     // Note: does not handle paths with halls wider than 1 x 1
     // Note: at some point, x and y became swapped; I don't want to unswap because I might break it
-
+    let enableStepThrough = false
 
     let img = "Maze.bmp"
 
@@ -198,17 +198,19 @@ let main argv =
                 for item in newToVisits do
                     toVisit.Enqueue(item)
             maze.[curPosition.[0]].SetValue('@', curPosition.[1])
-//            Console.Clear()
-//            printBoard maze
-//            Console.ReadKey (false) |> ignore
+            if enableStepThrough then
+                Console.Clear()
+                printBoard maze
+                Console.ReadKey (false) |> ignore
             if (toVisit.Count > 0) then
                 let nextPosition = toVisit.Dequeue()
                 let updatedMaze = depthFirstSearch maze nextPosition toVisit
                 if (checkForPath updatedMaze newToVisits) then //check if one of neighbours has a * in it                    
                     let tmep = updatePosition updatedMaze
-//                    Console.Clear()
-//                    printBoard tmep
-//                    Console.ReadKey (false) |> ignore
+                    if enableStepThrough then
+                        Console.Clear()
+                        printBoard tmep
+                        Console.ReadKey (false) |> ignore
                     tmep
                 else
                     updatedMaze
