@@ -70,6 +70,15 @@ let main argv =
     let startPoint = findCharacterInMaze maze startCharacter
     let endPoint = findCharacterInMaze maze endCharacter
 
+    let getColorForCharacter value =
+        match value with
+        | ' ' | '$' | '@' -> Drawing.Color.Black
+        | '*' -> Drawing.Color.White
+        | 'E' -> Drawing.Color.Red
+        | 'S' -> Drawing.Color.Pink
+        | _ -> Drawing.Color.Green
+
+
     let printBoard (board:char[][]) =
         for item in board do
             for subItem in item do
@@ -84,6 +93,15 @@ let main argv =
                 else
                     printf "%c" subItem
             printfn ""
+
+    let drawBoard (board:char[][]) =
+        let newBitmap = new System.Drawing.Bitmap(xDim, yDim)
+        for i = 0 to xDim - 1 do
+            for j = 0 to yDim - 1 do
+                newBitmap.SetPixel(i, j, (getColorForCharacter board.[i].[j]))
+        newBitmap.SetPixel(startPoint.[0], startPoint.[1], (getColorForCharacter 'S'))
+        newBitmap.SetPixel(endPoint.[0], endPoint.[1], (getColorForCharacter 'E'))
+        newBitmap.Save("SolvedMaze.bmp")
 
     let isValidTerrain (maze:char[][]) (position:int[]) =
         if (position.[0] >= 0) && (position.[1] >= 0) then
@@ -180,17 +198,17 @@ let main argv =
                 for item in newToVisits do
                     toVisit.Enqueue(item)
             maze.[curPosition.[0]].SetValue('@', curPosition.[1])
-            Console.Clear()
-            printBoard maze
-            Console.ReadKey (false) |> ignore
+//            Console.Clear()
+//            printBoard maze
+//            Console.ReadKey (false) |> ignore
             if (toVisit.Count > 0) then
                 let nextPosition = toVisit.Dequeue()
                 let updatedMaze = depthFirstSearch maze nextPosition toVisit
                 if (checkForPath updatedMaze newToVisits) then //check if one of neighbours has a * in it                    
                     let tmep = updatePosition updatedMaze
-                    Console.Clear()
-                    printBoard tmep
-                    Console.ReadKey (false) |> ignore
+//                    Console.Clear()
+//                    printBoard tmep
+//                    Console.ReadKey (false) |> ignore
                     tmep
                 else
                     updatedMaze
@@ -200,10 +218,7 @@ let main argv =
             updatePosition maze
 
     let finalMaze = depthFirstSearch maze startPoint (new System.Collections.Generic.Queue<int[]>())
-
-    Console.Clear()
-    printBoardWithPath finalMaze
-    //gameLoop maze startPoint
+    drawBoard finalMaze
 
 
     printf "\nPress any key to continue..."
