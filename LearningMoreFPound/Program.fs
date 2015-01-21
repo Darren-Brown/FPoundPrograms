@@ -7,6 +7,9 @@ open System.IO
 
 [<EntryPoint>]
 let main argv = 
+
+    // Number of letters to look back through to generate next letter
+    let lookupLength = 3
     let rand = new Random()
 
     let getInputFromFile (filepath:string)  =
@@ -71,7 +74,7 @@ let main argv =
             infiniGen dictionary
 
     let input = (getInputFromFile "input.txt") 
-    let dictionary = learn "" input Map.empty 3
+    let dictionary = learn "" input Map.empty lookupLength
 
     infiniGen dictionary
     printf "\nPress any key to continue..."
