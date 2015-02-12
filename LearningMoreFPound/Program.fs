@@ -148,7 +148,6 @@ let main argv =
 
 
     let dungeon = DungeonBuilder.buildDungeon dungeonSize dungeonDepth playerPosition
-    printfn "%s" (Test.AnyAsString 53535353)
     makeCellVisible playerPosition dungeon
     gameLoop playerPosition 0 0 dungeon
     printf "\nPress any key to continue..."
