@@ -11,16 +11,8 @@ open System.Text.RegularExpressions
 open System.Diagnostics
 open Microsoft.FSharp.Reflection
 
-type cellState = {content:char; visible:bool}
-
 [<EntryPoint>]
 let main argv = 
-
-    let wumpusPercent = 0.15
-    let pitTrapPercent = 0.05
-    let goldPercent = 0.15
-    let weaponPercent = 0.15
-    let playerViewSize = 3
 
     printf "Enter dungeon size: "
     let dungeonSize = int32 (Console.ReadLine())
@@ -30,79 +22,22 @@ let main argv =
     
     let generator = new Random (DateTime.Now.Millisecond)
     let playerPosition = [|generator.Next(1, dungeonSize); generator.Next(1, dungeonSize); 0|]
-
-    let wallDungeon size depth (dungeon:cellState[,,]) =
-            let adjustedSize = size
-            for y = 0 to (depth - 1) do
-                for i = 0 to adjustedSize do
-                    dungeon.SetValue( {content = '#'; visible=true}, [|0; i; y|])
-                    dungeon.SetValue( {content = '#'; visible=true}, [|adjustedSize; i; y|])
-                    dungeon.SetValue( {content = '#'; visible=true}, [|i; 0; y;|])
-                    dungeon.SetValue( {content = '#'; visible=true}, [|i; adjustedSize; y|])
-            dungeon
-
-
-    let buildDungeon size depth (playerPosition:int[]) =
-        let generator = new Random (DateTime.Now.Millisecond)
-        let emptyDungeon = Array3D.create (dungeonSize + 2) (dungeonSize + 2) depth {content='.'; visible=false}
-
-        let walledDungeon = wallDungeon (size + 1) depth emptyDungeon
-
-        let entrancePosition = playerPosition
-        walledDungeon.SetValue({content='^'; visible=false}, entrancePosition)
-
-        let rec generatePositions numToGenerate dungeonSize currentDepth (positions:List<(int * int)>) (dungeon:cellState[,,]) =
-            if numToGenerate > 0 then
-                let dimX, dimY = generator.Next(1, dungeonSize), generator.Next(1, dungeonSize)
-                if not (List.exists (fun x -> (dimX, dimY) = x) positions) && (dungeon.[dimX, dimY, currentDepth] = {content='.'; visible=false}) then
-                    let newPosition = (dimX, dimY)
-                    let newList = List.Cons(newPosition, positions)
-                    generatePositions (numToGenerate - 1) dungeonSize currentDepth newList dungeon
-                else
-                    generatePositions numToGenerate dungeonSize currentDepth positions dungeon
-            else
-                positions
-
-        let addElementsToFloor symbol percent dungeonSize floorDepth (dungeon:cellState[,,]) =
-            let elementNumbers = int32 (Math.Floor(percent * float (size * size)))
-
-            let elementPositions = generatePositions elementNumbers dungeonSize floorDepth List.Empty dungeon
-            for item in elementPositions do
-                dungeon.SetValue({content=symbol;visible=false}, [|fst item; snd item; floorDepth|])
-
-        let buildStairs upperFloorDepth lowerFloorDepth (dungeon:cellState[,,]) =
-            let downStairsLocation = (generatePositions 1 dungeonSize upperFloorDepth List.Empty dungeon).Head
-            dungeon.SetValue({content='▼';visible=false}, [|fst downStairsLocation; snd downStairsLocation; upperFloorDepth|])
-            dungeon.SetValue({content='^';visible=false}, [|fst downStairsLocation; snd downStairsLocation; lowerFloorDepth|])
-
-
-        
-        for level = 0 to (depth - 1) do
-            if (level < depth - 1) then
-                buildStairs level (level + 1) walledDungeon
-
-            addElementsToFloor '!' wumpusPercent (size + 1) level walledDungeon
-            addElementsToFloor 'W' weaponPercent (size + 1) level walledDungeon
-            addElementsToFloor 'P' pitTrapPercent (size + 1) level walledDungeon
-            addElementsToFloor '$' goldPercent (size + 1) level walledDungeon
-
-        walledDungeon
       
-    let makeCellVisible (playerPosition:int[]) (dungeon:cellState[,,]) =
+    let makeCellVisible (playerPosition:int[]) (dungeon:DataTypes.cellState[,,]) =
         let cellContent = dungeon.[playerPosition.[0],playerPosition.[1],playerPosition.[2]].content
-        dungeon.SetValue({content=cellContent; visible=true}, playerPosition)
+        dungeon.SetValue( new DataTypes.cellState(cellContent, true), playerPosition)
 
-    let printPlayerView (playerPosition:int[]) (dungeon:cellState[,,]) =
+    let printPlayerView (playerPosition:int[]) (dungeon:DataTypes.cellState[,,]) =
         
         let constrainPositionToMin coord =
             match coord with 
-            | x when (x - playerViewSize) < 0 -> 0
-            | _ -> coord - playerViewSize
+            | x when (x - DungeonConfig.playerViewSize) < 0 -> 0
+            | _ -> coord - DungeonConfig.playerViewSize
 
         let constrainPositionToMax coord =
             match coord with
-            | x when (x + playerViewSize) > (dungeonSize + 1) -> dungeonSize + 1
-            | _ -> coord + playerViewSize
+            | x when (x + DungeonConfig.playerViewSize) > (dungeonSize + 1) -> dungeonSize + 1
+            | _ -> coord + DungeonConfig.playerViewSize
                
         let minX = constrainPositionToMin playerPosition.[0]
         let maxX = constrainPositionToMax playerPosition.[0]
@@ -119,7 +54,7 @@ let main argv =
             printfn ""
 
 
-    let movePlayer direction (oldPosition:int[]) (dungeon:cellState[,,])=
+    let movePlayer direction (oldPosition:int[]) (dungeon:DataTypes.cellState[,,])=
         let newPosition =
             match direction with
                 |'d' -> [|oldPosition.[0]; oldPosition.[1] + 1;oldPosition.[2]|]
@@ -133,8 +68,8 @@ let main argv =
             newPosition
 
 
-    let playerLoot (playerPos:int[]) (dungeon:cellState[,,]) =
-        dungeon.SetValue({content='.'; visible=true}, playerPos.[0], playerPos.[1], playerPos.[2])
+    let playerLoot (playerPos:int[]) (dungeon:DataTypes.cellState[,,]) =
+        dungeon.SetValue(new DataTypes.cellState('.', true), playerPos.[0], playerPos.[1], playerPos.[2])
 
     let rec checkSurroundingsForChar (toCheck:list<char>) checkValue =
         if toCheck.IsEmpty then
@@ -146,7 +81,7 @@ let main argv =
             else
                 checkSurroundingsForChar (toCheck.Tail) checkValue
 
-    let rec printEnvironmentMessages (playerPosition:int[]) (dungeon:cellState[,,]) =
+    let rec printEnvironmentMessages (playerPosition:int[]) (dungeon:DataTypes.cellState[,,]) =
         let NESW = [    dungeon.[playerPosition.[0] + 1, playerPosition.[1],playerPosition.[2]].content;
                         dungeon.[playerPosition.[0] - 1, playerPosition.[1],playerPosition.[2]].content;
                         dungeon.[playerPosition.[0], playerPosition.[1] + 1,playerPosition.[2]].content;
@@ -157,7 +92,7 @@ let main argv =
         if checkSurroundingsForChar NESW 'P' then
             printfn "You hear a howling wind"
 
-    let rec gameLoop (playerPos:int[]) playerScore playerWeaponCount (dungeon:cellState[,,]) =
+    let rec gameLoop (playerPos:int[]) playerScore playerWeaponCount (dungeon:DataTypes.cellState[,,]) =
         printPlayerView playerPos dungeon
         printEnvironmentMessages playerPos dungeon
         let input = Console.ReadKey(true).KeyChar
@@ -212,7 +147,8 @@ let main argv =
             | _ ->  gameLoop playerPos playerScore playerWeaponCount dungeon
 
 
-    let dungeon = buildDungeon dungeonSize dungeonDepth playerPosition
+    let dungeon = DungeonBuilder.buildDungeon dungeonSize dungeonDepth playerPosition
+    printfn "%s" (Test.AnyAsString 53535353)
     makeCellVisible playerPosition dungeon
     gameLoop playerPosition 0 0 dungeon
     printf "\nPress any key to continue..."
