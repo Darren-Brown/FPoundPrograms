@@ -55,7 +55,6 @@
     <Reference Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Test.fs" />
     <Compile Include="DungeonConfig.fs" />
     <Compile Include="CellState.fs" />
     <Compile Include="DungeonBuilder.fs" />
