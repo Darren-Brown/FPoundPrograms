@@ -17,9 +17,6 @@ open Microsoft.FSharp.Reflection
 [<EntryPoint>]
 let main argv = 
     let rand = new System.Random ()
-
-//    printf "Please enter direction string size:"
-    //let inputSize = Math.Min(Int32.Parse(Console.ReadLine()), 111765)
     
     let generateDirection inputVal=
         match inputVal with
@@ -27,10 +24,12 @@ let main argv =
         | 1 -> 'R'
         | _ -> 'E'         
 
-//    printf "Please enter area size:"
-    //let areaSize = Int32.Parse(Console.ReadLine())
+    let minusXIterName = "iteration-{0}.bmp"
+    let imageStorageNumber = 3
 
     // for background
+//    let xSize = 100
+//    let ySize = 100
 //    let xSize = 1920
 //    let ySize = 1080
     let xSize = 3840
@@ -43,29 +42,30 @@ let main argv =
     let inputSize = Math.Max(Math.Max(redLimiter, greenLimiter), blueLimiter) * 255
 
     let colorIncrement = Math.Max(1, 255 / inputSize)
-    //let colorArray = Array.init (inputSize) (fun index -> Color.FromArgb(index % 255, (index / 255) % 255, (index / 65025) % 255))
     let colorFunction index = Color.FromArgb((index / redLimiter) % 255, ( index / greenLimiter) % 255,  (index / blueLimiter) % 255)
-    //let colorArray = Array.init (inputSize) (fun index -> Color.FromArgb(Math.Min(255, (index * colorIncrement)), (Math.Min(255, Math.Max(0, (index - 100) * colorIncrement))), Math.Min(50, (colorIncrement * index)/6)))
-    //let colorArray = Array.init (inputSize) (fun index -> Color.FromArgb( (Math.Min(255, Math.Max(0, (index - (2*inputSize/3)) * colorIncrement))), (Math.Min(255, Math.Max(0, (index - (inputSize/2)) * colorIncrement))), Math.Min(255, (index * colorIncrement))))
-    //let colorArray = Array.init (inputSize) (fun index -> Color.FromArgb( (Math.Min(200, Math.Max(0, (index - (2*inputSize/3)) * colorIncrement))), (Math.Min(200, Math.Max(0, (index - (inputSize/2)) * colorIncrement))), Math.Min(200, (index * colorIncrement))))
-    
-    //    let colorArray = Array.init (inputSize) (fun index -> Color.FromArgb((Math.Min(255, index * colorIncrement)), (Math.Min(255, Math.Max( 0, (index - 510) * colorIncrement))), (Math.Min(255, Math.Max( 0, (index - 255) * colorIncrement)))))
 
     let initialPosition = [|(xSize/2); (ySize/2)|]
-//    let initialPosition = [|0;0|]
+
     let printBoardImage (maze:int[,]) = async{
         printfn "generating bitmap at %s" (DateTime.Now.ToString())
         let test = new Bitmap(xSize, ySize)
         for i = 0 to (xSize - 1) do
             for j = 0 to (ySize - 1) do
-//                test.SetPixel(i, j, (Color.FromName ((enum<ConsoleColor>(maze.[i,j])).ToString())))
                 test.SetPixel(i, j, (colorFunction maze.[i,j]))
         
-        File.Delete("daBoardOld2.bmp")
-        File.Move("daBoardOld.bmp", "daBoardOld2.bmp")
-        File.Move("daBoard.bmp", "daBoardOld.bmp")
         
-        test.Save("daBoard.bmp", System.Drawing.Imaging.ImageFormat.Bmp) 
+
+        let rec shuffleImageNumbers iterNumber =
+            if iterNumber > 0 then
+                if File.Exists(String.Format(minusXIterName, iterNumber - 1)) then   
+                    File.Delete(String.Format(minusXIterName, iterNumber))          
+                    File.Move(String.Format(minusXIterName, iterNumber - 1), String.Format(minusXIterName, iterNumber))
+
+                shuffleImageNumbers (iterNumber - 1)
+
+        shuffleImageNumbers imageStorageNumber
+        
+        test.Save(String.Format(minusXIterName, 0), System.Drawing.Imaging.ImageFormat.Bmp) 
         printfn "Printed board at %s" (DateTime.Now.ToString())}
 
     let turnAnt currentDirection turnDirection =
@@ -92,48 +92,30 @@ let main argv =
 
     let rec mainLoop patternSize printAtInterval terminateAtInterval=
 
-        let rec runAnt (directionArray:char[]) (antPos:int[]) antDir (board:int[,]) printCountdown terminateCountdown (printTask:Tasks.Task<unit>)=
+        let rec runAnt (directionArray:char[]) (antPos:int[]) antDir (board:int[,]) iterationsUntilPrintCountdown terminateCountdown (printTask:Tasks.Task<unit>)=
             let newDirection = turnAnt antDir (directionArray.[board.[antPos.[0], antPos.[1]]])
             let newPosition = getNewAntPosition antPos newDirection
             board.SetValue ((board.[antPos.[0], antPos.[1]] + 1) % (directionArray.Length), antPos)
-        
-//            match printCountdown with
-//            | 1L -> printfn "began printing board at %s" (DateTime.Now.ToString())
-//                    printBoardImage board
-//                    printfn "new board generated at %s" (DateTime.Now.ToString())
-//                    //Thread.Sleep(1500)
-//                    if terminateCountdown < 1 then
-//                        printfn "finished pattern %A" directionArray
-//                        Thread.Sleep(5000)
-//                    else
-//                        runAnt directionArray newPosition newDirection board printAtInterval (terminateCountdown - 1)
-//            | _ -> runAnt directionArray newPosition newDirection board (printCountdown - 1L) terminateCountdown 
 
-            if printCountdown < 1L then
+            if iterationsUntilPrintCountdown < 1L then
                 if printTask <> null then
                     printTask.Wait ()
 
                 let newTask = (printBoardImage board) |> Async.StartAsTask
-                //printfn "new board generated at %s" (DateTime.Now.ToString())
-                //Thread.Sleep(1500)
                 if terminateCountdown < 1 then
                     printfn "finished pattern %A \n" directionArray
                 else
                     runAnt directionArray newPosition newDirection board printAtInterval (terminateCountdown - 1) newTask
             else
-                runAnt directionArray newPosition newDirection board (printCountdown - 1L) terminateCountdown printTask          
+                runAnt directionArray newPosition newDirection board (iterationsUntilPrintCountdown - 1L) terminateCountdown printTask          
 
         let inputDirectionArray = Array.init patternSize (fun _ -> rand.Next(0, 2) |> generateDirection)
-//        let inputDirectionArray = Array.init patternSize (fun index -> match index % 2 with
-//                                                                       | 0  -> 'L'
-//                                                                       | 1 -> 'R'
-//                                                                       | _ -> 'E' )
+
         let board = Array2D.init xSize ySize (fun _ _ -> 0)
         runAnt inputDirectionArray initialPosition 0 board printAtInterval terminateAtInterval null
         mainLoop patternSize printAtInterval terminateAtInterval
 
-    // printMazeImage board
-    mainLoop inputSize 100000000000L (100)
+    mainLoop inputSize 1000000000L (100)
     printf "\nPress any key to continue..."
     Console.ReadKey(true) |> ignore
     0 // return an integer exit code
