@@ -1,6 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2012
+# Visual Studio 14
+VisualStudioVersion = 14.0.25420.1
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "LearningMoreFPound", "LearningMoreFPound\LearningMoreFPound.fsproj", "{87555D9D-5163-4E34-93A4-B275F2234257}"
 EndProject
 Global
